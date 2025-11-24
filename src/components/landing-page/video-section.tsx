@@ -1,0 +1,30 @@
+import { PlayCircle } from "lucide-react";
+import type { VideoSectionData } from "./types";
+
+export function VideoSection({ headline, youtubeId }: VideoSectionData) {
+  const videoSrc = `https://www.youtube.com/embed/${youtubeId || 'dQw4w9WgXcQ'}`;
+
+  return (
+    <section className="py-24 md:py-32 bg-background">
+      <div className="container">
+        <div className="text-center space-y-4 mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold font-headline">
+            {headline || "See It in Action"}
+          </h2>
+        </div>
+        <div className="max-w-4xl mx-auto">
+          <div className="aspect-video relative rounded-lg shadow-2xl overflow-hidden border">
+             <iframe
+                className="absolute inset-0 w-full h-full"
+                src={videoSrc}
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
