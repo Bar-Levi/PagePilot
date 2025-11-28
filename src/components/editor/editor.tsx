@@ -24,18 +24,28 @@ export function Editor() {
     tone: string;
   }) => {
     setIsLoading(true);
+    setPageData(null);
     try {
       const result = await generateLandingPage(formData);
       
       let pageStructureString = result.pageStructure;
       
-      // The AI can sometimes return a markdown-like string with JSON inside.
-      // Let's try to extract it.
       if (pageStructureString.startsWith("```json")) {
         pageStructureString = pageStructureString.substring(7, pageStructureString.length - 3).trim();
       }
 
-      const parsedData = JSON.parse(pageStructureString);
+      let parsedData = JSON.parse(pageStructureString);
+
+      // The AI sometimes wraps the response in another pageStructure object.
+      if (parsedData.pageStructure) {
+        parsedData = parsedData.pageStructure;
+      }
+      
+      // The AI can also return an array directly, so we wrap it.
+      if (Array.isArray(parsedData)) {
+        parsedData = { pageStructure: parsedData };
+      }
+
       setPageData(parsedData);
       
       toast({
