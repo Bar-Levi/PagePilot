@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -25,21 +26,29 @@ export function Editor() {
     setIsLoading(true);
     try {
       const result = await generateLandingPage(formData);
-      // The AI returns a string, so we need to parse it.
-      // A try-catch block is essential here in a real app.
-      const parsedData = JSON.parse(result.pageStructure);
+      
+      let pageStructureString = result.pageStructure;
+      
+      // The AI can sometimes return a markdown-like string with JSON inside.
+      // Let's try to extract it.
+      if (pageStructureString.startsWith("```json")) {
+        pageStructureString = pageStructureString.substring(7, pageStructureString.length - 3).trim();
+      }
+
+      const parsedData = JSON.parse(pageStructureString);
       setPageData(parsedData);
+      
       toast({
-        title: "Page Generated!",
-        description: "Your new landing page is ready.",
+        title: "הדף נוצר!",
+        description: "דף הנחיתה החדש שלך מוכן.",
       });
     } catch (error) {
       console.error("Failed to generate or parse page data:", error);
       toast({
         variant: "destructive",
-        title: "Generation Failed",
+        title: "יצירה נכשלה",
         description:
-          "There was an error generating your page. Please try again.",
+          "הייתה שגיאה ביצירת הדף שלך. אנא נסה שוב.",
       });
       setIsLoading(false); // Ensure loading is stopped on error
     } 
