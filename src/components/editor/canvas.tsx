@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import type { PageData } from "../landing-page/types";
 import { ComponentRenderer } from "../landing-page/component-renderer";
 import { Skeleton } from "../ui/skeleton";
@@ -44,18 +43,7 @@ function LoadingSkeleton() {
 export function Canvas({
   pageData,
   isLoading,
-  onUpdate,
-  onLoadingComplete,
 }: CanvasProps) {
-  useEffect(() => {
-    if (pageData && !isLoading) {
-      // Allow the renderer to mount before signaling completion
-      const timer = setTimeout(() => {
-        onLoadingComplete();
-      }, 50);
-      return () => clearTimeout(timer);
-    }
-  }, [pageData, isLoading, onLoadingComplete]);
 
   return (
     <div className="bg-background w-full min-h-full">

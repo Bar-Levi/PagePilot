@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -39,11 +38,10 @@ const formSchema = z.object({
 
 type OnboardingModalProps = {
   onGenerate: (data: z.infer<typeof formSchema>) => Promise<void>;
+  isGenerating: boolean;
 };
 
-export function OnboardingModal({ onGenerate }: OnboardingModalProps) {
-  const [isGenerating, setIsGenerating] = useState(false);
-
+export function OnboardingModal({ onGenerate, isGenerating }: OnboardingModalProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,9 +52,7 @@ export function OnboardingModal({ onGenerate }: OnboardingModalProps) {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsGenerating(true);
     await onGenerate(values);
-    // No need to set isGenerating to false here, the parent component will unmount this modal.
   }
 
   return (

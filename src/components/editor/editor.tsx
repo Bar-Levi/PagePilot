@@ -50,10 +50,9 @@ export function Editor() {
         description:
           "הייתה שגיאה ביצירת הדף שלך. אנא נסה שוב.",
       });
-      setIsLoading(false); // Ensure loading is stopped on error
-    } 
-    // Do not set isLoading to false in the finally block if parsing is successful,
-    // as the canvas will take over the loading state indication.
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleUpdate = (newStructure: PageData) => {
@@ -61,11 +60,11 @@ export function Editor() {
   };
   
   const handleLoadingComplete = () => {
-    setIsLoading(false);
+    // This function is no longer strictly necessary but kept for potential future use.
   }
 
   if (!pageData && !isLoading) {
-    return <OnboardingModal onGenerate={handleGenerate} />;
+    return <OnboardingModal onGenerate={handleGenerate} isGenerating={isLoading} />;
   }
 
   return (
