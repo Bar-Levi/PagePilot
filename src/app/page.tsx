@@ -4,19 +4,19 @@ import { Rocket, Bot } from 'lucide-react';
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen" dir="rtl">
       <header className="px-4 lg:px-6 h-16 flex items-center border-b">
         <Link href="#" className="flex items-center justify-center" prefetch={false}>
           <Rocket className="h-6 w-6 text-primary" />
           <span className="sr-only">PagePilot</span>
         </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
+        <nav className="mr-auto flex gap-4 sm:gap-6">
           <Link
             href="/editor"
             className="text-sm font-medium hover:underline underline-offset-4"
             prefetch={false}
           >
-            Editor
+            עורך
           </Link>
         </nav>
       </header>
@@ -27,17 +27,17 @@ export default function Home() {
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
-                    Launch Your Perfect Landing Page, Instantly
+                    בנה את דף הנחיתה המושלם שלך, ברגע
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    PagePilot uses AI to generate, customize, and deploy stunning landing pages in minutes. No code, no hassle.
+                    PagePilot משתמש ב-AI כדי ליצור, להתאים אישית ולהשיק דפי נחיתה מדהימים תוך דקות. בלי קוד, בלי מאמץ.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
                   <Button asChild size="lg">
                     <Link href="/editor">
-                      Start Building For Free
-                      <Bot className="ml-2 h-5 w-5" />
+                      התחל לבנות בחינם
+                      <Bot className="mr-2 h-5 w-5" />
                     </Link>
                   </Button>
                 </div>
@@ -55,7 +55,7 @@ export default function Home() {
         </section>
       </main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-muted-foreground">&copy; 2024 PagePilot. All rights reserved.</p>
+        <p className="text-xs text-muted-foreground">&copy; 2024 PagePilot. כל הזכויות שמורות.</p>
       </footer>
     </div>
   );
