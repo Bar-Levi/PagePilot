@@ -49,11 +49,13 @@ export function RichTextToolbar() {
   };
   
   const handleStyleChange = (style: 'color' | 'size', value: string | number) => {
+      if (!applyStyle) return;
+      
       if (style === 'color') {
-          applyStyle?.('foreColor', value);
+          applyStyle('foreColor', value);
       }
-      if (style === 'size') {
-          applyStyle?.('fontSize', value);
+      if (style === 'size' && typeof value === 'number' && value > 0) {
+          applyStyle('fontSize', value);
       }
   };
 
@@ -100,6 +102,11 @@ export function RichTextToolbar() {
                 className="w-20 h-8"
                 value={activeStyles.size || ''}
                 onChange={(e) => handleStyleChange('size', parseInt(e.target.value, 10))}
+                onBlur={() => {
+                  if (activeStyles.size) {
+                    handleStyleChange('size', activeStyles.size);
+                  }
+                }}
             />
         </div>
         <div className="flex items-center gap-2">

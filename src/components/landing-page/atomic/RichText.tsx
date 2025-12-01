@@ -30,11 +30,9 @@ const getSelectionStyles = (
     
     const fontSize = computedStyle.fontSize;
     if (fontSize.endsWith('px')) {
-        // Remove 'px' and convert to number
         styles.size = parseInt(fontSize.replace('px', ''), 10);
     }
     
-    // Convert rgb to hex for the color input
     const rgbColor = computedStyle.color;
     try {
         const hexColor = '#' + rgbColor.match(/\d+/g)!.map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
@@ -75,27 +73,28 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({
     else if (style === 'underline') document.execCommand('underline');
     else if (style === 'foreColor') document.execCommand('foreColor', false, value);
     else if (style === 'fontSize') {
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-            const span = document.createElement('span');
-            span.style.fontSize = `${value}px`;
-            try {
-                range.surroundContents(span);
-            } catch (e) {
-                document.execCommand('fontSize', false, '7'); // Fallback size
-                const fontElements = editorRef.current.getElementsByTagName('font');
-                for (let i = 0; i < fontElements.length; i++) {
-                    if (fontElements[i].size === '7') {
-                        fontElements[i].style.fontSize = `${value}px`;
-                        fontElements[i].removeAttribute('size');
-                    }
-                }
+        // This is a trick. 'fontSize' command is tricky.
+        // We use a placeholder size '7' and then replace it with a styled span.
+        document.execCommand('fontSize', false, '7');
+        const fontElements = editorRef.current.getElementsByTagName('font');
+        // This loop is intentionally backwards.
+        // If we go forwards, changing the DOM messes up the collection.
+        for (let i = fontElements.length - 1; i >= 0; i--) {
+            const fontElement = fontElements[i];
+            if (fontElement.size === '7') {
+                const span = document.createElement('span');
+                span.style.fontSize = `${value}px`;
+                span.innerHTML = fontElement.innerHTML;
+                
+                // Replace the <font> tag with our new <span>
+                fontElement.parentNode?.replaceChild(span, fontElement);
             }
         }
     }
     
-    updateComponentProps(id, { html: editorRef.current.innerHTML });
+    if (editorRef.current) {
+        updateComponentProps(id, { html: editorRef.current.innerHTML });
+    }
     document.execCommand('styleWithCSS', false, 'false');
   }, [id, updateComponentProps]);
 
