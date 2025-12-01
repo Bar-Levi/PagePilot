@@ -4,22 +4,24 @@
 import React from "react";
 import type { PageComponent, PageData } from "./types";
 
-// NOTE: These are placeholder components. We will create the real ones in the next steps.
+// Import the new atomic components
+import { Container } from "./atomic/Container";
+import { RichText } from "./atomic/RichText";
+import { ImageComponent } from "./atomic/Image";
+import { ButtonComponent } from "./atomic/Button";
+
+// Map component types to the actual component implementations
 const componentMap: { [key: string]: React.ComponentType<any> } = {
-  RichText: (props: any) => <div>RichText Component: {JSON.stringify(props.content)}</div>,
-  Image: (props: any) => <img src={props.src} alt={props.alt} style={{ maxWidth: '100%' }} />,
-  Button: (props: any) => <button>{props.text}</button>,
-  Video: (props: any) => <div>Video Component: {props.youtubeId}</div>,
+  Container: Container,
+  RichText: RichText,
+  Image: ImageComponent,
+  Button: ButtonComponent,
+  Video: (props: any) => <div>Video Component (Not Implemented): {props.youtubeId}</div>,
   Input: (props: any) => <input placeholder={props.placeholder} />,
   Checkbox: (props: any) => <div><input type="checkbox" /> {props.label}</div>,
   Divider: (props: any) => <hr />,
-  Carousel: (props: any) => <div>Carousel Component</div>,
+  Carousel: (props: any) => <div>Carousel Component (Not Implemented)</div>,
   Form: (props: any) => <form>{props.children}</form>,
-  Container: (props: any) => (
-    <div style={props.style} data-container-id={props.id}>
-      {props.children}
-    </div>
-  ),
 };
 
 const RenderComponent = ({ component }: { component: PageComponent }): React.ReactElement | null => {
@@ -47,7 +49,7 @@ const RenderComponent = ({ component }: { component: PageComponent }): React.Rea
     );
   }
   
-  // For atomic components
+  // For atomic components without children
   return <Component {...component.props} />;
 };
 
@@ -66,7 +68,7 @@ export function ComponentRenderer({ pageData, onUpdate }: ComponentRendererProps
     );
   }
 
-  // The onUpdate function will need to be adapted later to handle updates to the new structure.
+  // The onUpdate function will be used later for inline editing.
   // For now, we are just focusing on rendering.
 
   return (
