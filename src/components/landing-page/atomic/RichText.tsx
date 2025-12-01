@@ -1,6 +1,6 @@
 
 "use client";
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import type { RichTextProps } from "../types";
 import { cn } from "@/lib/utils";
 import { useEditorState } from "@/hooks/use-editor-state.tsx";
@@ -34,7 +34,14 @@ const getSelectionStyles = (
       parseInt(computedStyle.fontWeight) >= 700;
     styles.italic = computedStyle.fontStyle === "italic";
     styles.underline = computedStyle.textDecoration.includes("underline");
-    styles.size = computedStyle.fontSize;
+    
+    const fontSize = computedStyle.fontSize;
+    if (fontSize.endsWith('px')) {
+      styles.size = parseInt(fontSize, 10).toString();
+    } else {
+      styles.size = fontSize;
+    }
+    
     styles.color = computedStyle.color;
   }
   return styles;
@@ -51,41 +58,35 @@ const applyStyleToSelection = (style: string, value?: string) => {
   const range = selection.getRangeAt(0);
   if (range.collapsed) return; // Don't apply to empty selection
 
-  const span = document.createElement("span");
+  document.execCommand("styleWithCSS", false, 'true');
+
   switch (style) {
     case "bold":
-      span.style.fontWeight = "bold";
+      document.execCommand("bold");
       break;
     case "italic":
-      span.style.fontStyle = "italic";
+      document.execCommand("italic");
       break;
     case "underline":
-      span.style.textDecoration = "underline";
+      document.execCommand("underline");
       break;
     case "size":
-      if (value) span.style.fontSize = `${value}px`;
+        // This is a hacky part of execCommand. '7' corresponds to the largest size.
+        // A more robust solution would be to wrap in a span manually.
+        // For now, let's use a span wrapper for size.
+        const sizeSpan = document.createElement('span');
+        if (value) sizeSpan.style.fontSize = `${value}px`;
+        try {
+            range.surroundContents(sizeSpan);
+        } catch (e) {
+             console.warn("Could not wrap selection, applying via execCommand fallback (this may be less reliable).", e);
+        }
       break;
     case "color":
-      if (value) span.style.color = value;
+      if (value) document.execCommand("foreColor", false, value);
       break;
   }
-
-  // This is the magic: it wraps the selected content with the new span.
-  try {
-    range.surroundContents(span);
-    selection.removeAllRanges();
-    selection.addRange(range);
-  } catch (e) {
-    // Fallback for complex selections (e.g., across multiple paragraphs)
-    console.warn("Could not wrap selection, applying via execCommand fallback (this may be less reliable).", e);
-    document.execCommand("styleWithCSS", false, 'true');
-    if (style === 'bold') document.execCommand('bold');
-    if (style === 'italic') document.execCommand('italic');
-    if (style === 'underline') document.execCommand('underline');
-    if (style === 'size' && value) document.execCommand('fontSize', false, '7'); // hack
-    if (style === 'color' && value) document.execCommand('foreColor', false, value);
-    document.execCommand("styleWithCSS", false, 'false');
-  }
+  document.execCommand("styleWithCSS", false, 'false');
 };
 
 // --- React Component ---
@@ -107,7 +108,7 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({
   const [activeStyles, setActiveStyles] = useState({});
 
   // This function will be passed up to the global state
-  const handleApplyStyle = (style: string, value?: any) => {
+  const handleApplyStyle = useCallback((style: string, value?: any) => {
     if (style === "align") {
       updateComponentProps(id, { align: value });
     } else {
@@ -117,13 +118,13 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({
         updateComponentProps(id, { html: editorRef.current.innerHTML });
       }
     }
-  };
+  }, [id, updateComponentProps]);
 
-  const handleGetActiveStyles = () => {
+  const handleGetActiveStyles = useCallback(() => {
     if (!editorRef.current) return {};
     const styles = getSelectionStyles(editorRef.current);
     return { ...styles, align };
-  };
+  }, [align]);
 
   // Register the functions with the global state when this component is selected
   useEffect(() => {
@@ -137,6 +138,9 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({
       document.addEventListener("selectionchange", updateToolbar);
       editor?.addEventListener("keyup", updateToolbar);
       editor?.addEventListener("click", updateToolbar);
+      
+      // Initial update
+      updateToolbar();
 
       return () => {
         document.removeEventListener("selectionchange", updateToolbar);
@@ -146,7 +150,7 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({
         setGetActiveStyles?.(undefined);
       };
     }
-  }, [isSelected, align]); // Re-register if alignment changes
+  }, [isSelected, align, handleApplyStyle, handleGetActiveStyles, setApplyStyle, setGetActiveStyles]);
 
   // Update DOM if HTML prop changes from outside (e.g., undo/redo)
   useEffect(() => {
@@ -158,9 +162,19 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({
   const handleInput = () => {
     if (editorRef.current) {
       const newHtml = editorRef.current.innerHTML;
-      updateComponentProps(id, { html: newHtml });
+      // Note: We don't call updateComponentProps on every input to avoid cursor jumps
+      // It's handled on blur or via formatting buttons.
     }
   };
+  
+  const handleBlur = () => {
+      if (editorRef.current) {
+          const newHtml = editorRef.current.innerHTML;
+          if (newHtml !== html) {
+              updateComponentProps(id, { html: newHtml });
+          }
+      }
+  }
 
   return (
     <div
@@ -168,6 +182,7 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({
       contentEditable={isSelected}
       suppressContentEditableWarning={true}
       onInput={handleInput}
+      onBlur={handleBlur}
       className={cn(
         "outline-none w-full",
         isSelected && "ring-2 ring-blue-500 ring-offset-2",
