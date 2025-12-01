@@ -73,14 +73,14 @@ export function PropsEditorPanel({ selectedComponent }: PropsEditorPanelProps) {
                                 <Label htmlFor={`content.${index}.text`}>תוכן</Label>
                                 <Input
                                     {...register(`content.${index}.text`)}
-                                    defaultValue={field.text}
+                                    defaultValue={(field as any).text}
                                     onBlur={handleSubmit(handlePropsChange)}
                                 />
                                 <Label htmlFor={`content.${index}.size`}>גודל גופן</Label>
                                 <Input
                                     type="number"
                                     {...register(`content.${index}.size`)}
-                                    defaultValue={field.size}
+                                    defaultValue={(field as any).size}
                                     onBlur={handleSubmit(handlePropsChange)}
                                 />
                            </div>
@@ -166,7 +166,7 @@ export function PropsEditorPanel({ selectedComponent }: PropsEditorPanelProps) {
                 <p className="text-sm text-muted-foreground">סוג: {selectedComponent.type}</p>
             </div>
             
-            <form onChange={handleSubmit(handlePropsChange)} className="space-y-4">
+            <form className="space-y-4">
                 {renderFormFields()}
             </form>
         </div>

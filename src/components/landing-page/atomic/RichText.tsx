@@ -12,6 +12,7 @@ const renderNode = (node: RichTextNode, index: number) => {
     color: node.color,
     fontSize: node.size ? `${node.size}px` : undefined,
     fontFamily: node.font,
+    whiteSpace: 'pre-wrap', // This is the fix for spaces
   };
 
   const content = (
