@@ -16,17 +16,6 @@ type PropsEditorPanelProps = {
   selectedComponent: PageComponent | null;
 };
 
-// Define schemas for different component props for validation
-const RichTextPropsSchema = z.object({
-  content: z.array(z.object({
-    text: z.string(),
-    bold: z.boolean().optional(),
-    size: z.number().optional(),
-  })),
-  align: z.enum(["left", "right", "center", "justify"]).optional(),
-});
-
-
 export function PropsEditorPanel({ selectedComponent }: PropsEditorPanelProps) {
     const { updateComponentProps } = useEditorState();
     
@@ -37,6 +26,8 @@ export function PropsEditorPanel({ selectedComponent }: PropsEditorPanelProps) {
     useEffect(() => {
         if (selectedComponent) {
             reset(selectedComponent.props);
+        } else {
+            reset({});
         }
     }, [selectedComponent, reset]);
 
@@ -61,32 +52,40 @@ export function PropsEditorPanel({ selectedComponent }: PropsEditorPanelProps) {
         switch (selectedComponent.type) {
             case "Image":
                  return (
-                    <div className="space-y-2">
-                        <Label htmlFor="src">כתובת תמונה (URL)</Label>
-                        <Input
-                            {...register("src")}
-                            defaultValue={selectedComponent.props.src}
-                            onBlur={handleSubmit(handlePropsChange)}
-                        />
-                        <p className="text-xs text-muted-foreground mt-2">שינויים נוספים יתווספו בקרוב.</p>
+                    <div className="space-y-4">
+                        <div>
+                            <Label htmlFor="src">כתובת תמונה (URL)</Label>
+                            <Input
+                                {...register("src")}
+                                onBlur={handleSubmit(handlePropsChange)}
+                            />
+                        </div>
+                         <div>
+                            <Label htmlFor="alt">טקסט חלופי (Alt)</Label>
+                            <Input
+                                {...register("alt")}
+                                onBlur={handleSubmit(handlePropsChange)}
+                            />
+                        </div>
                     </div>
                 );
             case "Button":
                  return (
-                    <div className="space-y-2">
-                        <Label htmlFor="text">טקסט כפתור</Label>
-                        <Input
-                            {...register("text")}
-                            defaultValue={selectedComponent.props.text}
-                            onBlur={handleSubmit(handlePropsChange)}
-                        />
-                        <Label htmlFor="href">קישור (Href)</Label>
-                        <Input
-                            {...register("href")}
-                            defaultValue={selectedComponent.props.href}
-                            onBlur={handleSubmit(handlePropsChange)}
-                        />
-                         <p className="text-xs text-muted-foreground mt-2">שינויים נוספים יתווספו בקרוב.</p>
+                    <div className="space-y-4">
+                        <div>
+                            <Label htmlFor="text">טקסט כפתור</Label>
+                            <Input
+                                {...register("text")}
+                                onBlur={handleSubmit(handlePropsChange)}
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="href">קישור (Href)</Label>
+                            <Input
+                                {...register("href")}
+                                onBlur={handleSubmit(handlePropsChange)}
+                            />
+                        </div>
                     </div>
                 );
             case "Container":
@@ -99,6 +98,8 @@ export function PropsEditorPanel({ selectedComponent }: PropsEditorPanelProps) {
                         </pre>
                     </div>
                  );
+             case "RichText":
+                 return <p className="text-sm text-muted-foreground">עריכת טקסט מתבצעת ישירות על הדף. מאפיינים נוספים יתווספו כאן בקרוב.</p>;
             default:
                 return <p className="text-sm text-muted-foreground">אין מאפיינים שניתן לערוך עבור רכיב זה כרגע.</p>;
         }
@@ -111,7 +112,7 @@ export function PropsEditorPanel({ selectedComponent }: PropsEditorPanelProps) {
                 <p className="text-sm text-muted-foreground">סוג: {selectedComponent.type}</p>
             </div>
             
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                 {renderFormFields()}
             </form>
         </div>
