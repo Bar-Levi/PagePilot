@@ -2,7 +2,7 @@
 "use client";
 
 import { createContext, useState, useCallback, useContext, ReactNode, useMemo } from 'react';
-import type { PageData, PageComponent } from '@/components/landing-page/types';
+import type { PageData, PageComponent, RichTextNode } from '@/components/landing-page/types';
 
 // Helper function to recursively find and update a component
 const updateComponentRecursively = (
@@ -48,6 +48,8 @@ type EditorContextType = {
   setSelectedComponentId: React.Dispatch<React.SetStateAction<string | null>>;
   selectedComponent: PageComponent | null;
   updateComponentProps: (id: string, newProps: any) => void;
+  applyStyleToSelection?: (style: string, value: any) => void;
+  getActiveStyles?: () => Partial<RichTextNode> & { align?: string };
 };
 
 export const EditorStateContext = createContext<EditorContextType | null>(null);
@@ -62,6 +64,9 @@ export const EditorStateProvider = ({
   const [history, setHistory] = useState<PageData[]>([initialPageData]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
+  const [applyStyleToSelection, setApplyStyleToSelection] = useState<(() => void) | undefined>();
+  const [getActiveStyles, setGetActiveStyles] = useState<(() => any) | undefined>();
+
 
   const updateComponentProps = useCallback((id: string, newProps: any) => {
     const currentPageData = history[currentIndex];
@@ -92,6 +97,11 @@ export const EditorStateProvider = ({
     setSelectedComponentId,
     selectedComponent,
     updateComponentProps,
+    applyStyleToSelection: applyStyleToSelection as any,
+    getActiveStyles,
+    // We pass these setters down so the RichText component can register its functions
+    __setApplyStyleFunction: setApplyStyleToSelection,
+    __setGetActiveStylesFunction: setGetActiveStyles,
   };
 
   return (
