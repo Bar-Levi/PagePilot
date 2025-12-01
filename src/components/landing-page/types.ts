@@ -1,85 +1,61 @@
 
-export type Cta = {
-  text: string;
-  href: string;
+/**
+ * =================================================================
+ * CORE CONTRACT: UNIFIED COMPONENT STRUCTURE
+ * =================================================================
+ * This is the single source of truth for the structure of any
+ * component within the page editor.
+ */
+
+// A strict list of all allowed component types.
+export type ComponentType =
+  | "Container"
+  | "RichText"
+  | "Image"
+  | "Video"
+  | "Button"
+  | "Input"
+  | "Checkbox"
+  | "Divider"
+  | "Carousel"
+  | "Form";
+
+// The unified structure for ANY component.
+export type PageComponent = {
+  id: string; // Unique identifier (e.g., UUID)
+  type: ComponentType;
+  props: AnyProps;
+  children?: PageComponent[];
 };
 
-// =================================================================
-// 1. ATOMIC COMPONENTS (Building Blocks)
-// =================================================================
-
-// 1.1 RichText Node
-export type RichTextNode = {
-  text: string;
-  bold?: boolean;
-  italic?: boolean;
-  underline?: boolean;
-  color?: string;
-  size?: number;
-  font?: string;
-  link?: string;
-};
-
-// 1.2 Image Component
-export type ImageComponentData = {
-  type: "image";
-  src: string;
-  alt: string;
-  width?: string | number;
-  maxWidth?: string | number;
-  rounded?: string;
-  shadow?: string;
-  alignment?: "left" | "center" | "right";
-};
-
-// 1.3 Video Component (YouTube only)
-export type VideoComponentData = {
-  type: "video";
-  youtubeId: string;
-  autoplay?: boolean;
-  controls?: boolean;
-  ratio?: "16:9" | "4:3" | "1:1";
-  alignment?: "left" | "center" | "right";
-};
-
-// 1.4 Button Component
-export type ButtonComponentData = {
-  type: "button";
-  text: string;
-  href: string;
-  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
-  size?: "default" | "sm" | "lg" | "icon";
-  radius?: string;
-  iconBefore?: string; // Lucide icon name
-  iconAfter?: string;  // Lucide icon name
-  hoverColor?: string;
-  fontWeight?: string;
-  padding?: string;
-};
-
-// 1.5 RichText Component
-export type RichTextComponentData = {
-  type: "richtext";
-  content: RichTextNode[];
-  align?: "left" | "right" | "center" | "justify";
-};
-
-// 1.6 Divider Component
-export type DividerComponentData = {
-  type: "divider";
-  thickness?: number;
-  color?: string;
-  spacing?: number;
+// The entire page is just an array of root-level components.
+export type PageData = {
+  pageStructure: PageComponent[];
 };
 
 
-// =================================================================
-// 2. LAYOUT COMPONENT (The Core)
-// =================================================================
+/**
+ * =================================================================
+ * COMPONENT-SPECIFIC PROPS
+ * =================================================================
+ * Each component type has its own specific props interface.
+ */
 
-// 2.1 Container Component
-export type ContainerComponentData = {
-  type: "container";
+export type AnyProps =
+  | ContainerProps
+  | RichTextProps
+  | ImageProps
+  | VideoProps
+  | ButtonProps
+  | DividerProps
+  | InputProps
+  | CheckboxProps
+  | CarouselProps
+  | FormProps;
+
+
+// 1. Container Props
+export type ContainerProps = {
   style?: {
     background?: string;
     padding?: string | number;
@@ -92,30 +68,105 @@ export type ContainerComponentData = {
     width?: string;
     maxWidth?: string;
   };
-  children: AnyComponent[];
+};
+
+// 2. RichText Props
+export type RichTextNode = {
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  color?: string;
+  size?: number;
+  font?: string;
+  link?: string;
+};
+export type RichTextProps = {
+  content: RichTextNode[];
+  align?: "left" | "right" | "center" | "justify";
+  spacing?: number;
+  padding?: number;
+};
+
+// 3. Image Props
+export type ImageProps = {
+  src: string;
+  alt: string;
+  width?: string | number;
+  maxWidth?: string | number;
+  rounded?: string;
+  shadow?: string;
+  alignment?: "left" | "center" | "right";
+};
+
+// 4. Video Props
+export type VideoProps = {
+  youtubeId: string;
+  autoplay?: boolean;
+  controls?: boolean;
+  ratio?: "16:9" | "4:3" | "1:1";
+  alignment?: "left" | "center" | "right";
+};
+
+// 5. Button Props
+export type ButtonProps = {
+  text: string;
+  href: string;
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  size?: "default" | "sm" | "lg" | "icon";
+  radius?: string;
+  iconBefore?: string; // Lucide icon name
+  iconAfter?: string;  // Lucide icon name
+  hoverColor?: string;
+  fontWeight?: string;
+  padding?: string;
+};
+
+// 6. Divider Props
+export type DividerProps = {
+  thickness?: number;
+  color?: string;
+  spacing?: number;
+};
+
+// 7. Input Props (for Forms)
+export type InputProps = {
+    label: string;
+    placeholder?: string;
+    name: string; // for form submission
+    required?: boolean;
+};
+
+// 8. Checkbox Props (for Forms)
+export type CheckboxProps = {
+    label: string;
+    name: string;
+    required?: boolean;
+};
+
+// 9. Carousel Props
+export type CarouselProps = {
+    // items are passed as children
+};
+
+// 10. Form Props
+export type FormProps = {
+    // children are the form fields (Input, Checkbox, etc.)
+    // plus a submit Button.
 };
 
 
-// =================================================================
-// 3. AGGREGATE TYPES
-// =================================================================
-
-// A union of all possible components
-export type AnyComponent =
-  | RichTextComponentData
-  | ImageComponentData
-  | VideoComponentData
-  | ButtonComponentData
-  | DividerComponentData
-  | ContainerComponentData;
-
-// The root of the page structure
-export type PageData = {
-  pageStructure: AnyComponent[];
+/**
+ * =================================================================
+ * DEPRECATED - For reference only during transition.
+ * These will be removed once all components are migrated.
+ * =================================================================
+ */
+export type Cta = {
+  text: string;
+  href: string;
 };
 
-// Keeping old types for now to avoid breaking the app completely
-// These will be removed in subsequent steps.
 export type OldHeroSectionData = {
   type: "hero";
   headline: string;
@@ -127,7 +178,7 @@ export type OldTextImageSectionData = { type: "text-image"; headline: string; te
 export type OldTestimonialsSectionData = { type: "testimonials"; headline: string; testimonials: { quote: string; author: string; role: string; avatar: { src: string, alt: string } }[]; };
 export type OldFaqSectionData = { type: "faq"; headline: string; questions: { question: string; answer: string }[]; };
 export type OldCtaSectionData = { type: "cta"; headline: string; subheadline: string; cta: Cta; };
-export type OldRichTextSectionData = { type: 'richtext'; content: RichTextNode[], align?: 'left' | 'right' | 'center' | 'justify', spacing?: number; background?: string; padding?: number; };
+export type OldRichTextSectionData = { type: 'richtext'; content: any[], align?: 'left' | 'right' | 'center' | 'justify', spacing?: number; background?: string; padding?: number; };
 export type OldPricingSectionData = { type: 'pricing', headline: string; plans: any[] };
 export type OldVideoSectionData = { type: 'video', headline: string; youtubeId: string };
 
