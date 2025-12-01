@@ -11,34 +11,10 @@ export function useHistoryState() {
     throw new Error('useHistoryState must be used within an EditorStateProvider');
   }
 
-  const { history, setHistory, currentIndex, setCurrentIndex } = context;
+  const { history, setHistory, currentIndex, setCurrentIndex, selectedComponent, setSelectedComponentId } = context;
 
   const pageData = useMemo(() => history[currentIndex], [history, currentIndex]);
-  const selectedComponentId = useMemo(() => context.selectedComponentId, [context.selectedComponentId]);
   
-  const selectedComponent = useMemo(() => {
-    if (!pageData || !selectedComponentId) return null;
-    
-    // Helper function to find a component by ID recursively
-    const findComponent = (components: PageComponent[]): PageComponent | null => {
-      for (const component of components) {
-        if (component.id === selectedComponentId) {
-          return component;
-        }
-        if (component.children) {
-          const foundInChildren = findComponent(component.children);
-          if (foundInChildren) {
-            return foundInChildren;
-          }
-        }
-      }
-      return null;
-    };
-    
-    return findComponent(pageData.pageStructure);
-  }, [pageData, selectedComponentId]);
-
-
   const setPageData = useCallback((newState: PageData | ((prevState: PageData) => PageData)) => {
     const resolvedState = typeof newState === 'function' ? (newState as (prevState: PageData) => PageData)(pageData) : newState;
     
@@ -76,12 +52,10 @@ export function useHistoryState() {
     pageData,
     setPageData,
     selectedComponent,
-    selectComponent: context.setSelectedComponentId,
+    selectComponent: setSelectedComponentId,
     undo,
     redo,
     canUndo,
     canRedo,
   };
 }
-
-

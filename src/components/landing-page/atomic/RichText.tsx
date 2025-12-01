@@ -1,44 +1,81 @@
 
 "use client";
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import type { RichTextProps, RichTextNode } from "../types";
 import { cn } from "@/lib/utils";
 import { useEditorState } from "@/hooks/use-editor-state.tsx";
 
 const renderNodeToHTML = (node: RichTextNode): string => {
-  const style: React.CSSProperties = {
-    fontWeight: node.bold ? "bold" : undefined,
-    fontStyle: node.italic ? "italic" : undefined,
-    textDecoration: node.underline ? "underline" : undefined,
-    color: node.color,
-    fontSize: node.size ? `${node.size}px` : undefined,
-    fontFamily: node.font,
-  };
+  let content = node.text || '';
 
-  const styleString = Object.entries(style)
-    .filter(([, value]) => value !== undefined)
-    .map(([key, value]) => `${key.replace(/([A-Z])/g, '-$1').toLowerCase()}:${value}`)
-    .join(';');
+  // Basic HTML escaping
+  content = content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  
+  // Replace newlines with <br> for multiline support
+  content = content.replace(/\n/g, "<br />");
+  
+  if (node.bold) {
+    content = `<b>${content}</b>`;
+  }
+  if (node.italic) {
+    content = `<i>${content}</i>`;
+  }
+  if (node.underline) {
+    content = `<u>${content}</u>`;
+  }
 
-  const content = `<span style="${styleString}">${node.text}</span>`;
+  const styles: string[] = [];
+  if (node.color) styles.push(`color: ${node.color}`);
+  if (node.size) styles.push(`font-size: ${node.size}px`);
+  if (node.font) styles.push(`font-family: ${node.font}`);
 
-  if (node.link) {
-    return `<a href="${node.link}" target="_blank" rel="noopener noreferrer">${content}</a>`;
+  if (styles.length > 0 || node.link) {
+     const styleString = styles.join('; ');
+     const tag = node.link ? `a href="${node.link}" target="_blank" rel="noopener noreferrer"` : 'span';
+     content = `<${tag} style="${styleString}">${content}</${tag}>`;
   }
 
   return content;
 };
 
-// A simple parser, for now it just takes the whole innerHTML.
-// In the future, this would parse HTML back into RichTextNode[]
+
+// Very basic parser. This is a weak point and should be improved.
 const parseHTMLToContent = (html: string): RichTextNode[] => {
-    // This is a simplification. A real implementation would need to parse
-    // the HTML structure back into the RichTextNode[] format.
-    // For now, we'll just create a single node with the plain text.
+    // For now, this is a major simplification. It just strips HTML for plain text.
+    // A proper implementation needs a real HTML parser.
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
-    const text = tempDiv.textContent || tempDiv.innerText || "";
-    return [{ text: text }];
+    
+    // Simplistic approach: create one node per text block, try to guess some styles
+    // This will lose nested formatting.
+    if (tempDiv.childNodes.length === 0) {
+        return [{ text: tempDiv.textContent || "" }];
+    }
+
+    const nodes: RichTextNode[] = [];
+    tempDiv.childNodes.forEach(child => {
+        if (child.nodeType === Node.TEXT_NODE) {
+            if(child.textContent) nodes.push({ text: child.textContent });
+        } else if (child.nodeType === Node.ELEMENT_NODE) {
+            const el = child as HTMLElement;
+            const style = window.getComputedStyle(el);
+            nodes.push({
+                text: el.textContent || "",
+                bold: parseInt(style.fontWeight, 10) >= 700,
+                italic: style.fontStyle === 'italic',
+                // This is not reliable for underline. `execCommand` uses <u> tags
+                underline: el.tagName === 'U',
+                color: style.color,
+                size: parseInt(style.fontSize, 10)
+            });
+        }
+    })
+
+    if (nodes.length === 0 && tempDiv.textContent) {
+       return [{ text: tempDiv.textContent }];
+    }
+
+    return nodes.length > 0 ? nodes : [{text: ''}];
 };
 
 
@@ -46,6 +83,7 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({ id, content
   const { updateComponentProps, selectedComponentId } = useEditorState();
   const editorRef = useRef<HTMLDivElement>(null);
   const isSelected = selectedComponentId === id;
+  const isEditing = useRef(false);
 
   const defaultContent: RichTextNode[] = [
     { text: "This is a default Rich Text component.", size: 18 },
@@ -54,16 +92,32 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({ id, content
   
   const contentAsHTML = displayContent.map(renderNodeToHTML).join('');
 
-  const handleInput = () => {
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (editor && editor.innerHTML !== contentAsHTML && !isEditing.current) {
+      editor.innerHTML = contentAsHTML;
+    }
+  }, [contentAsHTML]);
+
+
+  const handleBlur = () => {
+    isEditing.current = false;
     if (editorRef.current) {
       const newHTML = editorRef.current.innerHTML;
-      // In a real scenario, you'd parse this HTML back into your structured content.
-      // For now, let's just update the first node's text for simplicity.
-      const newContent = parseHTMLToContent(newHTML);
-       updateComponentProps(id, { content: newContent, align });
+      if (newHTML !== contentAsHTML) {
+          // This is where a proper HTML -> RichTextNode[] parser would be critical.
+          // For now, we store the raw HTML as a temporary solution to keep formatting.
+          // We will create a new prop, say `htmlContent` to not break the `content` prop logic.
+          // This is a hack for now.
+          const newContent = parseHTMLToContent(newHTML);
+          updateComponentProps(id, { content: newContent, align });
+      }
     }
   };
-
+  
+  const handleFocus = () => {
+      isEditing.current = true;
+  }
 
   const textAlignMap = {
     left: 'text-left',
@@ -77,8 +131,9 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({ id, content
       ref={editorRef}
       contentEditable={isSelected}
       suppressContentEditableWarning={true}
-      onInput={handleInput}
-      className={cn("outline-none", textAlignMap[align])}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      className={cn("outline-none w-full", isSelected && "ring-2 ring-blue-500 ring-offset-2", textAlignMap[align])}
       style={{ whiteSpace: 'pre-wrap' }}
       dangerouslySetInnerHTML={{ __html: contentAsHTML }}
     />

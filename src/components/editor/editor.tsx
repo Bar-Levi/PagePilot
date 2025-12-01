@@ -9,9 +9,8 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import { useHistoryState } from "@/hooks/use-history-state";
-import { v4 as uuidv4 } from 'uuid';
 import { EditorStateProvider } from "@/hooks/use-editor-state.tsx";
-
+import { RichTextToolbar } from "./rich-text-toolbar";
 
 const defaultPageData: PageData = {
   pageStructure: [
@@ -116,6 +115,7 @@ function EditorInternal() {
       <div className="flex h-screen w-screen bg-muted/40">
         <EditorSidebar selectedComponent={selectedComponent ?? null} />
         <main className="flex-1 flex flex-col h-screen">
+           <RichTextToolbar />
           <header className="h-16 bg-background border-b flex items-center justify-between px-6">
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" asChild>

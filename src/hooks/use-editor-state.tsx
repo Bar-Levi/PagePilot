@@ -1,7 +1,7 @@
 
 "use client";
 
-import { createContext, useState, useCallback, useContext, ReactNode } from 'react';
+import { createContext, useState, useCallback, useContext, ReactNode, useMemo } from 'react';
 import type { PageData, PageComponent } from '@/components/landing-page/types';
 
 // Helper function to recursively find and update a component
@@ -12,13 +12,30 @@ const updateComponentRecursively = (
 ): PageComponent[] => {
   return components.map(component => {
     if (component.id === id) {
-      return { ...component, props: newProps };
+      // Merge new props with existing props
+      const mergedProps = { ...component.props, ...newProps };
+      return { ...component, props: mergedProps };
     }
     if (component.children) {
       return { ...component, children: updateComponentRecursively(component.children, id, newProps) };
     }
     return component;
   });
+};
+
+const findComponentRecursively = (components: PageComponent[], id: string): PageComponent | null => {
+  for (const component of components) {
+    if (component.id === id) {
+      return component;
+    }
+    if (component.children) {
+      const found = findComponentRecursively(component.children, id);
+      if (found) {
+        return found;
+      }
+    }
+  }
+  return null;
 };
 
 
@@ -29,6 +46,7 @@ type EditorContextType = {
   setCurrentIndex: React.Dispatch<React.SetStateAction<number>>;
   selectedComponentId: string | null;
   setSelectedComponentId: React.Dispatch<React.SetStateAction<string | null>>;
+  selectedComponent: PageComponent | null;
   updateComponentProps: (id: string, newProps: any) => void;
 };
 
@@ -58,6 +76,12 @@ export const EditorStateProvider = ({
     setCurrentIndex(newHistory.length - 1);
   }, [currentIndex, history]);
 
+  const selectedComponent = useMemo(() => {
+    if (!selectedComponentId) return null;
+    const currentPageData = history[currentIndex];
+    return findComponentRecursively(currentPageData.pageStructure, selectedComponentId);
+  }, [selectedComponentId, history, currentIndex]);
+
 
   const value = {
     history,
@@ -66,6 +90,7 @@ export const EditorStateProvider = ({
     setCurrentIndex,
     selectedComponentId,
     setSelectedComponentId,
+    selectedComponent,
     updateComponentProps,
   };
 
