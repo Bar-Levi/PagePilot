@@ -37,17 +37,15 @@ export function Editor() {
 
       let parsedData;
       try {
-        parsedData = JSON.parse(pageStructureString);
-      } catch (e) {
-        console.error("Initial JSON parsing failed, attempting to fix...", e);
         // Attempt to fix common AI JSON errors, like trailing commas
-        const fixedJsonString = pageStructureString.replace(/,\s*([}\]])/g, '$1');
-        try {
-          parsedData = JSON.parse(fixedJsonString);
-        } catch (finalError) {
-          console.error("Could not fix JSON:", finalError);
-          throw new Error("Invalid JSON response from AI.");
-        }
+        const fixedJsonString = pageStructureString
+          .replace(/,\s*([}\]])/g, '$1') // Remove trailing commas
+          .replace(/(\r\n|\n|\r)/gm, ""); // Remove newlines
+
+        parsedData = JSON.parse(fixedJsonString);
+      } catch (e) {
+        console.error("Could not parse JSON:", e);
+        throw new Error("Invalid JSON response from AI.");
       }
 
       // The AI sometimes wraps the response in another pageStructure object.
