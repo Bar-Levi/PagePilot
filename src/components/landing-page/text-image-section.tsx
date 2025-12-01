@@ -9,6 +9,7 @@ export function TextImageSection({
   image,
   imagePosition = "right",
   onUpdate,
+  ...props
 }: TextImageSectionData & { onUpdate: (d: Partial<TextImageSectionData>) => void }) {
   const placeholderImage = PlaceHolderImages.find(p => p.id === 'feature-1');
   const imageUrl = image?.src || placeholderImage?.imageUrl || "https://picsum.photos/seed/text-image-placeholder/600/400";
@@ -17,7 +18,7 @@ export function TextImageSection({
   const handleImageClick = () => {
     const newSrc = window.prompt("Enter new image URL:", imageUrl);
     if (newSrc) {
-        onUpdate({ image: { ...image, src: newSrc } });
+        onUpdate({ ...props, headline, text, image: { ...image, src: newSrc }, imagePosition });
     }
   };
 

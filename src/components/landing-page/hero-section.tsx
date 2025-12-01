@@ -9,7 +9,8 @@ export function HeroSection({
   subheadline,
   cta,
   image,
-  onUpdate
+  onUpdate,
+  ...props
 }: HeroSectionData & { onUpdate: (d: Partial<HeroSectionData>) => void }) {
   const placeholderImage = PlaceHolderImages.find(p => p.id === 'hero-1');
   const imageUrl = image?.src || placeholderImage?.imageUrl || "https://picsum.photos/seed/hero-placeholder/1200/800";
@@ -18,13 +19,13 @@ export function HeroSection({
   const handleImageClick = () => {
     const newSrc = window.prompt("Enter new image URL:", imageUrl);
     if (newSrc) {
-      onUpdate({ image: { ...image, src: newSrc } });
+      onUpdate({ ...props, headline, subheadline, cta, image: { ...image, src: newSrc } });
     }
   };
 
   return (
     <section className="relative w-full h-[70vh] md:h-[80vh]">
-      <div className="absolute inset-0 cursor-pointer" onClick={handleImageClick}>
+      <div className="absolute inset-0 cursor-pointer group" onClick={handleImageClick}>
         <Image
           src={imageUrl}
           alt={imageAlt}
