@@ -30,23 +30,42 @@ export function Editor() {
       
       let pageStructureString = result.pageStructure;
       
+      // Handle cases where the response is wrapped in markdown
       if (pageStructureString.startsWith("```json")) {
         pageStructureString = pageStructureString.substring(7, pageStructureString.length - 3).trim();
       }
 
-      let parsedData = JSON.parse(pageStructureString);
+      let parsedData;
+      try {
+        parsedData = JSON.parse(pageStructureString);
+      } catch (e) {
+        console.error("Initial JSON parsing failed, attempting to fix...", e);
+        // Attempt to fix common AI JSON errors, like trailing commas
+        const fixedJsonString = pageStructureString.replace(/,\s*([}\]])/g, '$1');
+        try {
+          parsedData = JSON.parse(fixedJsonString);
+        } catch (finalError) {
+          console.error("Could not fix JSON:", finalError);
+          throw new Error("Invalid JSON response from AI.");
+        }
+      }
 
       // The AI sometimes wraps the response in another pageStructure object.
       if (parsedData.pageStructure) {
-        parsedData = parsedData.pageStructure;
+        parsedData = { pageStructure: parsedData.pageStructure };
       }
       
       // The AI can also return an array directly, so we wrap it.
       if (Array.isArray(parsedData)) {
         parsedData = { pageStructure: parsedData };
       }
-
-      setPageData(parsedData);
+      
+      // The AI can also return an array in the pageStructure property
+      if (Array.isArray(parsedData.pageStructure)) {
+        setPageData({ pageStructure: parsedData.pageStructure });
+      } else {
+         throw new Error("Invalid page structure format from AI.");
+      }
       
       toast({
         title: "הדף נוצר!",

@@ -52,9 +52,9 @@ export function OnboardingModal({ onGenerate, isGenerating }: OnboardingModalPro
   });
 
   function handleAutoFill() {
-    form.setValue('businessDescription', 'An online store that sells handmade eco-friendly dog toys.');
-    form.setValue('targetAudience', 'Dog owners in urban areas who care about the environment.');
-    form.setValue('tone', 'Playful and friendly');
+    form.setValue('businessDescription', 'חנות אונליין שמוכרת צעצועים אקולוגיים בעבודת יד לכלבים.');
+    form.setValue('targetAudience', 'בעלי כלבים באזורים עירוניים שאכפת להם מהסביבה.');
+    form.setValue('tone', 'שובב וידידותי');
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
