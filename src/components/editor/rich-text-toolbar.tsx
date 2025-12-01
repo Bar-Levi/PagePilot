@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
@@ -11,52 +12,22 @@ import { Label } from '../ui/label';
 import { useEffect, useState } from 'react';
 
 export function RichTextToolbar() {
-  const { selectedComponent, textActionHandlers } = useEditorState();
-  const [activeStyles, setActiveStyles] = useState<Record<string, any>>({});
+  const { selectedComponent } = useEditorState();
   
-  const isVisible = selectedComponent?.type === 'RichText';
-
-  // This effect updates the toolbar's state based on the current selection.
-  useEffect(() => {
-    const updateToolbarState = () => {
-      if (isVisible && textActionHandlers.current?.getActiveStyles) {
-        setActiveStyles(textActionHandlers.current.getActiveStyles() || {});
-      } else {
-        setActiveStyles({});
-      }
-    };
-    
-    // Update when component selection changes
-    updateToolbarState();
-
-    // Also update when the text selection inside the editor changes
-    document.addEventListener('selectionchange', updateToolbarState);
-    return () => {
-      document.removeEventListener('selectionchange', updateToolbarState);
-    };
-  }, [isVisible, selectedComponent, textActionHandlers]);
-
-  const applyStyle = textActionHandlers.current?.applyStyle;
+  const isVisible = selectedComponent?.type === 'TextContainer' || selectedComponent?.type === 'TextSpan';
 
   const handleFormat = (style: 'bold' | 'italic' | 'underline') => (e: React.MouseEvent) => {
     e.preventDefault();
-    applyStyle?.(style);
+    // TODO: Implement style toggling on selected TextSpans
   };
 
   const handleAlign = (align: 'left' | 'center' | 'right') => (e: React.MouseEvent) => {
     e.preventDefault();
-    applyStyle?.('align', align);
+    // TODO: Implement alignment on parent TextContainer
   };
   
   const handleStyleChange = (style: 'color' | 'size', value: string | number) => {
-      if (!applyStyle) return;
-      
-      if (style === 'color') {
-          applyStyle('foreColor', value);
-      }
-      if (style === 'size' && typeof value === 'number' && value > 0) {
-          applyStyle('fontSize', value);
-      }
+      // TODO: Implement style change on selected TextSpans
   };
 
   if (!isVisible) {
@@ -66,6 +37,9 @@ export function RichTextToolbar() {
        </div>
     );
   }
+  
+  // TODO: Get active styles from selected component(s) to show in toolbar
+  const activeStyles: Record<string, any> = {};
 
   return (
     <div
@@ -102,11 +76,6 @@ export function RichTextToolbar() {
                 className="w-20 h-8"
                 value={activeStyles.size || ''}
                 onChange={(e) => handleStyleChange('size', parseInt(e.target.value, 10))}
-                onBlur={() => {
-                  if (activeStyles.size) {
-                    handleStyleChange('size', activeStyles.size);
-                  }
-                }}
             />
         </div>
         <div className="flex items-center gap-2">

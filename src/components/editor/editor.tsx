@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import type { PageData, PageComponent } from "../landing-page/types";
@@ -31,19 +32,22 @@ const defaultPageData: PageData = {
       children: [
         {
           id: "hero-headline",
-          type: "RichText",
-          props: {
-            align: "center",
-            html: `<span style="font-size: 52px; font-weight: bold;">צעצועים שמחים לכלבים מאושרים</span>`,
-          },
+          type: "TextContainer",
+          props: { align: "center" },
+          children: [
+            { id: 't1', type: 'TextSpan', props: { text: "צעצועים ", size: 52, bold: true } },
+            { id: 't2', type: 'TextSpan', props: { text: "שמחים ", size: 52, bold: true } },
+            { id: 't3', type: 'TextSpan', props: { text: "לכלבים ", size: 52, bold: true } },
+            { id: 't4', type: 'TextSpan', props: { text: "מאושרים", size: 52, bold: true } },
+          ]
         },
         {
           id: "hero-subheadline",
-          type: "RichText",
-          props: {
-            align: "center",
-            html: `<span style="font-size: 20px; color: hsl(var(--muted-foreground));">צעצועים אקולוגיים בעבודת יד, כי לחבר הכי טוב שלך מגיע את הטוב ביותר.</span>`,
-          },
+          type: "TextContainer",
+          props: { align: "center" },
+          children: [
+              { id: 't5', type: 'TextSpan', props: { text: "צעצועים אקולוגיים בעבודת יד, כי לחבר הכי טוב שלך מגיע את הטוב ביותר.", size: 20, color: "hsl(var(--muted-foreground))" } }
+          ]
         },
         {
           id: "hero-cta-button",
@@ -74,8 +78,22 @@ const defaultPageData: PageData = {
           type: "Container",
           props: { style: { flexDirection: "column", gap: 16, alignItems: "flex-start", justifyContent: "center" } },
           children: [
-            { id: "feature-headline", type: "RichText", props: { align: 'left', html: `<span style="font-size: 36px; font-weight: bold;">עבודת יד, מחומרים טבעיים</span>` } },
-            { id: "feature-text", type: "RichText", props: { align: 'left', html: `<span style="font-size: 18px; color: hsl(var(--muted-foreground));">כל צעצוע מיוצר באהבה מחומרים ממוחזרים ועמידים, בטוחים לכלב שלך וידידותיים לסביבה. אנחנו מאמינים שגם לכלבים מגיע ליהנות ממוצרים איכותיים שמכבדים את כדור הארץ.</span>` } },
+             {
+              id: "feature-headline",
+              type: "TextContainer",
+              props: { align: 'left' },
+              children: [
+                { id: 't6', type: 'TextSpan', props: { text: "עבודת יד, מחומרים טבעיים", size: 36, bold: true } },
+              ]
+            },
+            {
+              id: "feature-text",
+              type: "TextContainer",
+              props: { align: 'left' },
+              children: [
+                 { id: 't7', type: 'TextSpan', props: { text: "כל צעצוע מיוצר באהבה מחומרים ממוחזרים ועמידים, בטוחים לכלב שלך וידידותיים לסביבה. אנחנו מאמינים שגם לכלבים מגיע ליהנות ממוצרים איכותיים שמכבדים את כדור הארץ.", size: 18, color: "hsl(var(--muted-foreground))" } },
+              ]
+            },
           ]
         },
         {

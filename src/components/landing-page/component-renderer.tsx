@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React from "react";
@@ -6,7 +7,8 @@ import type { PageComponent, PageData } from "./types";
 
 // Import the new atomic components
 import { Container } from "./atomic/Container";
-import { RichText } from "./atomic/RichText";
+import { TextContainer } from "./atomic/TextContainer";
+import { TextSpan } from "./atomic/TextSpan";
 import { ImageComponent } from "./atomic/Image";
 import { ButtonComponent } from "./atomic/Button";
 import { EditableComponentWrapper } from "../editor/editable-component-wrapper";
@@ -14,7 +16,8 @@ import { EditableComponentWrapper } from "../editor/editable-component-wrapper";
 // Map component types to the actual component implementations
 const componentMap: { [key: string]: React.ComponentType<any> } = {
   Container: Container,
-  RichText: RichText,
+  TextContainer: TextContainer,
+  TextSpan: TextSpan,
   Image: ImageComponent,
   Button: ButtonComponent,
   Video: (props: any) => <div>Video Component (Not Implemented): {props.youtubeId}</div>,
@@ -49,7 +52,7 @@ const RenderComponent = ({ component, selectedComponentId, onSelectComponent }: 
   const isSelected = selectedComponentId === component.id;
 
   const renderedComponent = (
-    (component.type === "Container" && component.children) ? (
+    (component.children && component.children.length > 0) ? (
       <Component {...component.props} id={component.id}>
         {component.children.map((child) => (
           <RenderComponent 

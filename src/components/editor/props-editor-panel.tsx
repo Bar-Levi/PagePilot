@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import type { PageComponent } from "../landing-page/types";
@@ -88,7 +89,8 @@ export function PropsEditorPanel({ selectedComponent }: PropsEditorPanelProps) {
                         </pre>
                     </div>
                  );
-             case "RichText":
+             case "TextContainer":
+             case "TextSpan":
                  return <p className="text-sm text-muted-foreground" dir="rtl">עריכת תוכן ועיצוב טקסט מתבצעת ישירות על הדף באמצעות סרגל הכלים העליון.</p>;
             default:
                 return <p className="text-sm text-muted-foreground">אין מאפיינים שניתן לערוך עבור רכיב זה כרגע.</p>;

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { createContext, useState, useCallback, useContext, ReactNode, useMemo, useRef } from 'react';
@@ -39,13 +40,6 @@ const findComponentRecursively = (components: PageComponent[], id: string): Page
 };
 
 // --- Types ---
-export type ApplyStyleFunc = (style: string, value?: any) => void;
-export type GetActiveStylesFunc = () => Record<string, any>;
-
-type TextActionHandlers = {
-  applyStyle: ApplyStyleFunc;
-  getActiveStyles: GetActiveStylesFunc;
-};
 
 type EditorContextType = {
   history: PageData[];
@@ -56,9 +50,6 @@ type EditorContextType = {
   setSelectedComponentId: React.Dispatch<React.SetStateAction<string | null>>;
   selectedComponent: PageComponent | null;
   updateComponentProps: (id: string, newProps: any) => void;
-  
-  // Use a ref to hold handlers to prevent re-renders
-  textActionHandlers: React.MutableRefObject<TextActionHandlers | null>;
 };
 
 export const EditorStateContext = createContext<EditorContextType | null>(null);
@@ -74,8 +65,6 @@ export const EditorStateProvider = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
   
-  // Use a ref to hold the handlers. This avoids re-renders.
-  const textActionHandlers = useRef<TextActionHandlers | null>(null);
 
   const updateComponentProps = useCallback((id: string, newProps: any) => {
     const currentPageData = history[currentIndex];
@@ -103,7 +92,6 @@ export const EditorStateProvider = ({
     setSelectedComponentId,
     selectedComponent,
     updateComponentProps,
-    textActionHandlers,
   };
 
   return (

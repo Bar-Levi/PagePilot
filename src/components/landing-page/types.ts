@@ -1,4 +1,5 @@
 
+
 /**
  * =================================================================
  * CORE CONTRACT: UNIFIED COMPONENT STRUCTURE
@@ -10,7 +11,8 @@
 // A strict list of all allowed component types.
 export type ComponentType =
   | "Container"
-  | "RichText"
+  | "TextContainer"
+  | "TextSpan"
   | "Image"
   | "Video"
   | "Button"
@@ -43,7 +45,8 @@ export type PageData = {
 
 export type AnyProps =
   | ContainerProps
-  | RichTextProps
+  | TextContainerProps
+  | TextSpanProps
   | ImageProps
   | VideoProps
   | ButtonProps
@@ -70,23 +73,24 @@ export type ContainerProps = {
   };
 };
 
-// 2. RichText Props
-export type RichTextNode = {
-  text: string;
-  bold?: boolean;
-  italic?: boolean;
-  underline?: boolean;
-  color?: string;
-  size?: number;
-  font?: string;
-  link?: string;
-};
-export type RichTextProps = {
-  html: string;
-  align?: "left" | "right" | "center" | "justify";
+// 2. TextContainer Props
+export type TextContainerProps = {
+    align?: "left" | "right" | "center" | "justify";
 };
 
-// 3. Image Props
+// 3. TextSpan Props
+export type TextSpanProps = {
+    text: string;
+    bold?: boolean;
+    italic?: boolean;
+    underline?: boolean;
+    color?: string;
+    size?: number; // in pixels
+    link?: string;
+};
+
+
+// 4. Image Props
 export type ImageProps = {
   src: string;
   alt: string;
@@ -97,7 +101,7 @@ export type ImageProps = {
   alignment?: "left" | "center" | "right";
 };
 
-// 4. Video Props
+// 5. Video Props
 export type VideoProps = {
   youtubeId: string;
   autoplay?: boolean;
@@ -106,7 +110,7 @@ export type VideoProps = {
   alignment?: "left" | "center" | "right";
 };
 
-// 5. Button Props
+// 6. Button Props
 export type ButtonProps = {
   text: string;
   href: string;
@@ -120,14 +124,14 @@ export type ButtonProps = {
   padding?: string;
 };
 
-// 6. Divider Props
+// 7. Divider Props
 export type DividerProps = {
   thickness?: number;
   color?: string;
   spacing?: number;
 };
 
-// 7. Input Props (for Forms)
+// 8. Input Props (for Forms)
 export type InputProps = {
     label: string;
     placeholder?: string;
@@ -135,31 +139,20 @@ export type InputProps = {
     required?: boolean;
 };
 
-// 8. Checkbox Props (for Forms)
+// 9. Checkbox Props (for Forms)
 export type CheckboxProps = {
     label: string;
     name: string;
     required?: boolean;
 };
 
-// 9. Carousel Props
+// 10. Carousel Props
 export type CarouselProps = {
     // items are passed as children
 };
 
-// 10. Form Props
+// 11. Form Props
 export type FormProps = {
     // children are the form fields (Input, Checkbox, etc.)
     // plus a submit Button.
-};
-
-
-/**
- * =================================================================
- * DEPRECATED - For reference only during transition.
- * =================================================================
- */
-export type OldSection = {
-  type: string;
-  // properties...
 };
