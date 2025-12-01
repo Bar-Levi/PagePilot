@@ -38,44 +38,88 @@ const renderNodeToHTML = (node: RichTextNode): string => {
   return content;
 };
 
+// Recursive parser to handle nested styles
+const parseNodeToRichText = (node: Node, inheritedStyles: Partial<RichTextNode> = {}): RichTextNode[] => {
+    if (node.nodeType === Node.TEXT_NODE) {
+        return node.textContent ? [{ text: node.textContent, ...inheritedStyles }] : [];
+    }
 
-// Very basic parser. This is a weak point and should be improved.
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+        return [];
+    }
+
+    const el = node as HTMLElement;
+    const newStyles: Partial<RichTextNode> = { ...inheritedStyles };
+
+    // Apply tag-based styles
+    switch (el.tagName.toLowerCase()) {
+        case 'b':
+        case 'strong':
+            newStyles.bold = true;
+            break;
+        case 'i':
+        case 'em':
+            newStyles.italic = true;
+            break;
+        case 'u':
+            newStyles.underline = true;
+            break;
+        case 'a':
+            newStyles.link = (el as HTMLAnchorElement).href;
+            break;
+    }
+
+    // Apply inline styles
+    if (el.style.color) newStyles.color = el.style.color;
+    if (el.style.fontSize) newStyles.size = parseInt(el.style.fontSize, 10);
+    if (el.style.fontFamily) newStyles.font = el.style.fontFamily;
+    if (el.style.fontWeight === 'bold' || parseInt(el.style.fontWeight) >= 700) newStyles.bold = true;
+    if (el.style.fontStyle === 'italic') newStyles.italic = true;
+    if (el.style.textDecoration === 'underline') newStyles.underline = true;
+
+    // Recursively parse children with the new styles
+    let childNodes: RichTextNode[] = [];
+    el.childNodes.forEach(child => {
+        childNodes = childNodes.concat(parseNodeToRichText(child, newStyles));
+    });
+
+    return childNodes;
+};
+
+
 const parseHTMLToContent = (html: string): RichTextNode[] => {
-    // For now, this is a major simplification. It just strips HTML for plain text.
-    // A proper implementation needs a real HTML parser.
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
     
-    // Simplistic approach: create one node per text block, try to guess some styles
-    // This will lose nested formatting.
-    if (tempDiv.childNodes.length === 0) {
-        return [{ text: tempDiv.textContent || "" }];
-    }
-
-    const nodes: RichTextNode[] = [];
+    let nodes: RichTextNode[] = [];
     tempDiv.childNodes.forEach(child => {
-        if (child.nodeType === Node.TEXT_NODE) {
-            if(child.textContent) nodes.push({ text: child.textContent });
-        } else if (child.nodeType === Node.ELEMENT_NODE) {
-            const el = child as HTMLElement;
-            const style = window.getComputedStyle(el);
-            nodes.push({
-                text: el.textContent || "",
-                bold: parseInt(style.fontWeight, 10) >= 700,
-                italic: style.fontStyle === 'italic',
-                // This is not reliable for underline. `execCommand` uses <u> tags
-                underline: el.tagName === 'U',
-                color: style.color,
-                size: parseInt(style.fontSize, 10)
-            });
-        }
-    })
+        nodes = nodes.concat(parseNodeToRichText(child));
+    });
 
+    // If parsing results in nothing, fallback to plain text
     if (nodes.length === 0 && tempDiv.textContent) {
        return [{ text: tempDiv.textContent }];
     }
 
-    return nodes.length > 0 ? nodes : [{text: ''}];
+    // A small optimization to merge adjacent nodes with identical styles
+    if (nodes.length > 1) {
+        const mergedNodes: RichTextNode[] = [nodes[0]];
+        for (let i = 1; i < nodes.length; i++) {
+            const prev = mergedNodes[mergedNodes.length - 1];
+            const curr = nodes[i];
+            const { text: prevText, ...prevStyles } = prev;
+            const { text: currText, ...currStyles } = curr;
+
+            if (JSON.stringify(prevStyles) === JSON.stringify(currStyles)) {
+                prev.text += curr.text;
+            } else {
+                mergedNodes.push(curr);
+            }
+        }
+        return mergedNodes;
+    }
+
+    return nodes;
 };
 
 
@@ -105,10 +149,6 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({ id, content
     if (editorRef.current) {
       const newHTML = editorRef.current.innerHTML;
       if (newHTML !== contentAsHTML) {
-          // This is where a proper HTML -> RichTextNode[] parser would be critical.
-          // For now, we store the raw HTML as a temporary solution to keep formatting.
-          // We will create a new prop, say `htmlContent` to not break the `content` prop logic.
-          // This is a hack for now.
           const newContent = parseHTMLToContent(newHTML);
           updateComponentProps(id, { content: newContent, align });
       }

@@ -99,7 +99,7 @@ export function PropsEditorPanel({ selectedComponent }: PropsEditorPanelProps) {
                     </div>
                  );
              case "RichText":
-                 return <p className="text-sm text-muted-foreground">עריכת טקסט מתבצעת ישירות על הדף. מאפיינים נוספים יתווספו כאן בקרוב.</p>;
+                 return <p className="text-sm text-muted-foreground" dir="rtl">עריכת תוכן ועיצוב טקסט מתבצעת ישירות על הדף באמצעות סרגל הכלים העליון.</p>;
             default:
                 return <p className="text-sm text-muted-foreground">אין מאפיינים שניתן לערוך עבור רכיב זה כרגע.</p>;
         }
@@ -109,7 +109,7 @@ export function PropsEditorPanel({ selectedComponent }: PropsEditorPanelProps) {
         <div className="p-4 space-y-4" dir="rtl">
             <div>
                 <h3 className="text-md font-medium">עריכת רכיב</h3>
-                <p className="text-sm text-muted-foreground">סוג: {selectedComponent.type}</p>
+                <p className="text-sm text_muted-foreground">סוג: {selectedComponent.type}</p>
             </div>
             
             <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
