@@ -38,22 +38,22 @@ const prompt = ai.definePrompt({
 
 You will receive a business description, target audience, and desired tone.
 
-Based on this information, create a comprehensive landing page JSON structure that is mobile-friendly and optimized for conversion.
+Based on this information, create a comprehensive landing page JSON structure.
 
 Business Description: {{{businessDescription}}}
 Target Audience: {{{targetAudience}}}
 Tone: {{{tone}}}
 
-Ensure the JSON structure includes the following components:
-- Hero section with a compelling headline and call-to-action.
-- Value proposition section highlighting the key benefits.
-- Testimonials section to build trust and credibility.
-- FAQ section to address common questions.
-- Pricing section to showcase different plans.
-- Video embed section to provide a visual overview.
-- Call-to-action section at the bottom to drive conversions.
+You MUST use ONLY the following component types in the 'type' field for each section:
+- "hero": For the main hero section.
+- "text-image": For sections with text and an accompanying image. Use this for value propositions or feature showcases.
+- "testimonials": For customer testimonials.
+- "faq": For a list of frequently asked questions.
+- "pricing": For pricing plans.
+- "video": For embedding a video.
+- "cta": For a final call-to-action section.
 
-Output ONLY valid JSON. Do NOT include any other text or markdown.
+Your entire output must be a single, valid JSON object that can be parsed directly. Do NOT include any markdown, text, or explanations outside of the JSON structure.
 `,
 });
 
