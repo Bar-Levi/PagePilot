@@ -1,16 +1,12 @@
 
 "use client";
 
-import type { PageComponent, PageData, RichTextNode } from "../landing-page/types";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import type { PageComponent } from "../landing-page/types";
+import { useForm } from "react-hook-form";
 import { useEditorState } from "@/hooks/use-editor-state.tsx";
 import { useEffect } from "react";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
 
 type PropsEditorPanelProps = {
   selectedComponent: PageComponent | null;
@@ -18,11 +14,8 @@ type PropsEditorPanelProps = {
 
 export function PropsEditorPanel({ selectedComponent }: PropsEditorPanelProps) {
     const { updateComponentProps } = useEditorState();
+    const { register, handleSubmit, reset } = useForm();
     
-    // We use a generic form and then cast the values based on component type
-    const { register, control, handleSubmit, watch, reset } = useForm();
-    
-    // Reset form when selected component changes
     useEffect(() => {
         if (selectedComponent) {
             reset(selectedComponent.props);
@@ -33,10 +26,7 @@ export function PropsEditorPanel({ selectedComponent }: PropsEditorPanelProps) {
 
     const handlePropsChange = (data: any) => {
         if (!selectedComponent) return;
-        
-        // This is a simple deep merge, good enough for now
         const newProps = { ...selectedComponent.props, ...data };
-
         updateComponentProps(selectedComponent.id, newProps);
     };
 

@@ -10,37 +10,31 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
 export function RichTextToolbar() {
-  const { selectedComponent, applyStyleToSelection, getActiveStyles } = useEditorState();
+  const { selectedComponent, applyStyle, getActiveStyles } = useEditorState();
   
-  const handleFormat = (command: 'bold' | 'italic' | 'underline') => (e: React.MouseEvent) => {
+  const handleFormat = (style: 'bold' | 'italic' | 'underline') => (e: React.MouseEvent) => {
     e.preventDefault();
-    if (applyStyleToSelection) {
-      applyStyleToSelection(command, !activeStyles[command]);
-    }
+    applyStyle?.(style);
   };
 
   const handleAlign = (align: 'left' | 'center' | 'right') => (e: React.MouseEvent) => {
     e.preventDefault();
-    if (applyStyleToSelection) {
-      applyStyleToSelection('align', align);
-    }
+    applyStyle?.('align', align);
   };
   
   const handleStyleChange = (style: 'color' | 'size', value: string | number) => {
-    if (applyStyleToSelection) {
-      applyStyleToSelection(style, value);
-    }
+    applyStyle?.(style, value);
   };
 
   const isVisible = selectedComponent?.type === 'RichText';
-  const activeStyles = getActiveStyles ? getActiveStyles() : {};
+  const activeStyles = getActiveStyles?.() || {};
 
   if (!isVisible) {
     return (
        <div className="h-[57px] border-b bg-background flex items-center p-2">
          <p className="text-sm text-muted-foreground px-2">Select a text component to see formatting options</p>
        </div>
-    )
+    );
   }
 
   return (

@@ -1,8 +1,8 @@
 
 "use client";
 
-import { createContext, useState, useCallback, useContext, ReactNode, useMemo } from 'react';
-import type { PageData, PageComponent, RichTextNode } from '@/components/landing-page/types';
+import { createContext, useState, useCallback, useContext, ReactNode, useMemo, useEffect } from 'react';
+import type { PageData, PageComponent } from '@/components/landing-page/types';
 
 // Helper function to recursively find and update a component
 const updateComponentRecursively = (
@@ -38,6 +38,9 @@ const findComponentRecursively = (components: PageComponent[], id: string): Page
   return null;
 };
 
+// --- Types ---
+type ApplyStyleFunc = (style: string, value?: any) => void;
+type GetActiveStylesFunc = () => Record<string, any>;
 
 type EditorContextType = {
   history: PageData[];
@@ -48,8 +51,12 @@ type EditorContextType = {
   setSelectedComponentId: React.Dispatch<React.SetStateAction<string | null>>;
   selectedComponent: PageComponent | null;
   updateComponentProps: (id: string, newProps: any) => void;
-  applyStyleToSelection?: (style: string, value: any) => void;
-  getActiveStyles?: () => Partial<RichTextNode> & { align?: string };
+  
+  // Functions for Rich Text Editor interaction
+  applyStyle?: ApplyStyleFunc;
+  getActiveStyles?: GetActiveStylesFunc;
+  setApplyStyle?: React.Dispatch<React.SetStateAction<(() => ApplyStyleFunc) | undefined>>;
+  setGetActiveStyles?: React.Dispatch<React.SetStateAction<(() => GetActiveStylesFunc) | undefined>>;
 };
 
 export const EditorStateContext = createContext<EditorContextType | null>(null);
@@ -64,15 +71,15 @@ export const EditorStateProvider = ({
   const [history, setHistory] = useState<PageData[]>([initialPageData]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
-  const [applyStyleToSelection, setApplyStyleToSelection] = useState<(() => void) | undefined>();
-  const [getActiveStyles, setGetActiveStyles] = useState<(() => any) | undefined>();
-
+  
+  // These hold a *function that returns a function*. This is a stable reference
+  // that allows the RichText component to register its own implementation.
+  const [applyStyleFn, setApplyStyle] = useState<() => ApplyStyleFunc>();
+  const [getActiveStylesFn, setGetActiveStyles] = useState<() => GetActiveStylesFunc>();
 
   const updateComponentProps = useCallback((id: string, newProps: any) => {
     const currentPageData = history[currentIndex];
-    
     const newPageStructure = updateComponentRecursively(currentPageData.pageStructure, id, newProps);
-    
     const newPageData = { ...currentPageData, pageStructure: newPageStructure };
 
     const newHistory = history.slice(0, currentIndex + 1);
@@ -87,8 +94,15 @@ export const EditorStateProvider = ({
     return findComponentRecursively(currentPageData.pageStructure, selectedComponentId);
   }, [selectedComponentId, history, currentIndex]);
 
+  // When the selected component changes, if it's not a RichText, clear the functions.
+  useEffect(() => {
+    if (selectedComponent?.type !== 'RichText') {
+      setApplyStyle(undefined);
+      setGetActiveStyles(undefined);
+    }
+  }, [selectedComponent]);
 
-  const value = {
+  const value: EditorContextType = {
     history,
     setHistory,
     currentIndex,
@@ -97,11 +111,12 @@ export const EditorStateProvider = ({
     setSelectedComponentId,
     selectedComponent,
     updateComponentProps,
-    applyStyleToSelection: applyStyleToSelection as any,
-    getActiveStyles,
-    // We pass these setters down so the RichText component can register its functions
-    __setApplyStyleFunction: setApplyStyleToSelection,
-    __setGetActiveStylesFunction: setGetActiveStyles,
+    // Execute the stored function to get the actual implementation
+    applyStyle: applyStyleFn ? applyStyleFn() : undefined,
+    getActiveStyles: getActiveStylesFn ? getActiveStylesFn() : undefined,
+    // Pass the setters down for registration
+    setApplyStyle: setApplyStyle as any,
+    setGetActiveStyles: setGetActiveStyles as any,
   };
 
   return (

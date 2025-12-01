@@ -34,9 +34,7 @@ const defaultPageData: PageData = {
           type: "RichText",
           props: {
             align: "center",
-            content: [
-              { text: "צעצועים שמחים לכלבים מאושרים", bold: true, size: 52 },
-            ],
+            html: `<span style="font-size: 52px; font-weight: bold;">צעצועים שמחים לכלבים מאושרים</span>`,
           },
         },
         {
@@ -44,9 +42,7 @@ const defaultPageData: PageData = {
           type: "RichText",
           props: {
             align: "center",
-            content: [
-              { text: "צעצועים אקולוגיים בעבודת יד, כי לחבר הכי טוב שלך מגיע את הטוב ביותר.", size: 20, color: "hsl(var(--muted-foreground))" },
-            ],
+            html: `<span style="font-size: 20px; color: hsl(var(--muted-foreground));">צעצועים אקולוגיים בעבודת יד, כי לחבר הכי טוב שלך מגיע את הטוב ביותר.</span>`,
           },
         },
         {
@@ -78,8 +74,8 @@ const defaultPageData: PageData = {
           type: "Container",
           props: { style: { flexDirection: "column", gap: 16, alignItems: "flex-start", justifyContent: "center" } },
           children: [
-            { id: "feature-headline", type: "RichText", props: { content: [{ text: "עבודת יד, מחומרים טבעיים", bold: true, size: 36 }] } },
-            { id: "feature-text", type: "RichText", props: { content: [{ text: "כל צעצוע מיוצר באהבה מחומרים ממוחזרים ועמידים, בטוחים לכלב שלך וידידותיים לסביבה. אנחנו מאמינים שגם לכלבים מגיע ליהנות ממוצרים איכותיים שמכבדים את כדור הארץ.", size: 18, color: "hsl(var(--muted-foreground))" }] } },
+            { id: "feature-headline", type: "RichText", props: { align: 'left', html: `<span style="font-size: 36px; font-weight: bold;">עבודת יד, מחומרים טבעיים</span>` } },
+            { id: "feature-text", type: "RichText", props: { align: 'left', html: `<span style="font-size: 18px; color: hsl(var(--muted-foreground));">כל צעצוע מיוצר באהבה מחומרים ממוחזרים ועמידים, בטוחים לכלב שלך וידידותיים לסביבה. אנחנו מאמינים שגם לכלבים מגיע ליהנות ממוצרים איכותיים שמכבדים את כדור הארץ.</span>` } },
           ]
         },
         {

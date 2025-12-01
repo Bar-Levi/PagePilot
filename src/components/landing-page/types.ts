@@ -82,7 +82,7 @@ export type RichTextNode = {
   link?: string;
 };
 export type RichTextProps = {
-  content: RichTextNode[];
+  html: string;
   align?: "left" | "right" | "center" | "justify";
 };
 
