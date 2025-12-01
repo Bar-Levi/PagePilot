@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { PageData } from "../landing-page/types";
@@ -51,7 +52,7 @@ export function Canvas({
         {isLoading ? (
           <LoadingSkeleton />
         ) : pageData?.pageStructure ? (
-          <ComponentRenderer sections={pageData.pageStructure} onUpdate={(updatedSections) => onUpdate({ ...pageData, pageStructure: updatedSections })} />
+          <ComponentRenderer pageData={pageData} onUpdate={onUpdate} />
         ) : (
           <div className="flex items-center justify-center h-[80vh]">
             <p className="text-muted-foreground">

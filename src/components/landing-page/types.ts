@@ -84,8 +84,6 @@ export type RichTextNode = {
 export type RichTextProps = {
   content: RichTextNode[];
   align?: "left" | "right" | "center" | "justify";
-  spacing?: number;
-  padding?: number;
 };
 
 // 3. Image Props
@@ -159,35 +157,9 @@ export type FormProps = {
 /**
  * =================================================================
  * DEPRECATED - For reference only during transition.
- * These will be removed once all components are migrated.
  * =================================================================
  */
-export type Cta = {
-  text: string;
-  href: string;
+export type OldSection = {
+  type: string;
+  // properties...
 };
-
-export type OldHeroSectionData = {
-  type: "hero";
-  headline: string;
-  subheadline: string;
-  cta: Cta;
-  image: { src: string, alt: string };
-};
-export type OldTextImageSectionData = { type: "text-image"; headline: string; text: string; image: { src: string, alt: string }; imagePosition: "left" | "right"; };
-export type OldTestimonialsSectionData = { type: "testimonials"; headline: string; testimonials: { quote: string; author: string; role: string; avatar: { src: string, alt: string } }[]; };
-export type OldFaqSectionData = { type: "faq"; headline: string; questions: { question: string; answer: string }[]; };
-export type OldCtaSectionData = { type: "cta"; headline: string; subheadline: string; cta: Cta; };
-export type OldRichTextSectionData = { type: 'richtext'; content: any[], align?: 'left' | 'right' | 'center' | 'justify', spacing?: number; background?: string; padding?: number; };
-export type OldPricingSectionData = { type: 'pricing', headline: string; plans: any[] };
-export type OldVideoSectionData = { type: 'video', headline: string; youtubeId: string };
-
-export type Section =
-  | OldHeroSectionData
-  | OldTextImageSectionData
-  | OldTestimonialsSectionData
-  | OldFaqSectionData
-  | OldCtaSectionData
-  | OldRichTextSectionData
-  | OldPricingSectionData
-  | OldVideoSectionData;

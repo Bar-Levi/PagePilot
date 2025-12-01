@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { PageData } from "../landing-page/types";
+import type { PageData, PageComponent } from "../landing-page/types";
 import { EditorSidebar } from "./editor-sidebar";
 import { Canvas } from "./canvas";
 import { Rocket, Download, Settings, Share2, Undo, Redo } from "lucide-react";
@@ -9,67 +9,108 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import { useHistoryState } from "@/hooks/use-history-state";
+import { v4 as uuidv4 } from 'uuid'; // We'll need a UUID library
+
+// Helper to generate a default structure for a new component
+const createDefaultComponent = (type: PageComponent['type']): PageComponent => {
+  const baseComponent = { id: uuidv4(), type, children: [] };
+  switch (type) {
+    case 'RichText':
+      return { ...baseComponent, props: { content: [{ text: "New Text Block" }] } };
+    case 'Button':
+      return { ...baseComponent, props: { text: "Click Me", href: "#" } };
+    case 'Image':
+      return { ...baseComponent, props: { src: "https://picsum.photos/seed/new-image/600/400", alt: "Placeholder" } };
+    case 'Container':
+    default:
+      return { ...baseComponent, props: { style: { padding: 16, gap: 16 } } };
+  }
+};
+
 
 const defaultPageData: PageData = {
-  "pageStructure": [
+  pageStructure: [
+    // Hero Section Container
     {
-      "type": "hero",
-      "headline": "צעצועים שמחים לכלבים מאושרים",
-      "subheadline": "צעצועים אקולוגיים בעבודת יד, כי לחבר הכי טוב שלך מגיע את הטוב ביותר.",
-      "cta": { "text": "קנו עכשיו", "href": "#pricing" },
-      "image": { "src": "https://picsum.photos/seed/dog-hero/1200/800", "alt": "כלב שמח משחק עם צעצוע" }
-    },
-    {
-      "type": "richtext",
-      "align": "center",
-      "spacing": 8,
-      "content": [
-        { "text": "ברוכים הבאים לעולם של ", "size": 20 },
-        { "text": "צעצועי כלבים", "size": 20, "bold": true, "color": "hsl(var(--primary))" },
-        { "text": " שעשויים באהבה ודאגה לסביבה!", "size": 20 }
-      ]
-    },
-    {
-      "type": "text-image",
-      "headline": "עבודת יד, מחומרים טבעיים",
-      "text": "כל צעצוע מיוצר באהבה מחומרים ממוחזרים ועמידים, בטוחים לכלב שלך וידידותיים לסביבה. אנחנו מאמינים שגם לכלבים מגיע ליהנות ממוצרים איכותיים שמכבדים את כדור הארץ.",
-      "image": { "src": "https://picsum.photos/seed/eco-toys/600/400", "alt": "צעצועים אקולוגיים לכלבים" },
-      "imagePosition": "right"
-    },
-    {
-      "type": "testimonials",
-      "headline": "מה לקוחות מספרים עלינו",
-      "testimonials": [
+      id: "hero-section",
+      type: "Container",
+      props: {
+        style: {
+          padding: "96px 32px",
+          background: "hsl(var(--background))",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          gap: 24,
+        }
+      },
+      children: [
         {
-          "quote": "הכלב שלי לא עוזב את הבובה החדשה! סוף סוף צעצוע שהוא לא מצליח להרוס תוך חמש דקות. מומלץ בחום!",
-          "author": "דנה כהן",
-          "role": "אמא של לוקי",
-          "avatar": { "src": "https://picsum.photos/seed/avatar1/100/100", "alt": "דנה כהן" }
+          id: "hero-headline",
+          type: "RichText",
+          props: {
+            align: "center",
+            content: [
+              { text: "צעצועים שמחים לכלבים מאושרים", bold: true, size: 52 },
+            ],
+          },
         },
         {
-          "quote": "שירות מעולה ומוצרים איכותיים. מרגישים שהושקעה מחשבה בכל פרט. אני בהחלט אזמין שוב.",
-          "author": "אביב לוי",
-          "role": "אבא של רקס",
-          "avatar": { "src": "https://picsum.photos/seed/avatar2/100/100", "alt": "אביב לוי" }
+          id: "hero-subheadline",
+          type: "RichText",
+          props: {
+            align: "center",
+            content: [
+              { text: "צעצועים אקולוגיים בעבודת יד, כי לחבר הכי טוב שלך מגיע את הטוב ביותר.", size: 20, color: "hsl(var(--muted-foreground))" },
+            ],
+          },
+        },
+        {
+          id: "hero-cta-button",
+          type: "Button",
+          props: {
+            text: "קנו עכשיו",
+            href: "#pricing",
+            size: "lg",
+          },
+        },
+      ],
+    },
+    // Feature Section Container
+    {
+      id: "feature-section",
+      type: "Container",
+      props: {
+        style: {
+          padding: "64px 32px",
+          alignItems: "center",
+          gap: 48,
+          maxWidth: "1100px"
+        }
+      },
+      children: [
+        {
+          id: "feature-text-container",
+          type: "Container",
+          props: { style: { flexDirection: "column", gap: 16, alignItems: "flex-start", justifyContent: "center" } },
+          children: [
+            { id: "feature-headline", type: "RichText", props: { content: [{ text: "עבודת יד, מחומרים טבעיים", bold: true, size: 36 }] } },
+            { id: "feature-text", type: "RichText", props: { content: [{ text: "כל צעצוע מיוצר באהבה מחומרים ממוחזרים ועמידים, בטוחים לכלב שלך וידידותיים לסביבה. אנחנו מאמינים שגם לכלבים מגיע ליהנות ממוצרים איכותיים שמכבדים את כדור הארץ.", size: 18, color: "hsl(var(--muted-foreground))" }] } },
+          ]
+        },
+        {
+          id: "feature-image",
+          type: "Image",
+          props: {
+            src: "https://picsum.photos/seed/eco-toys/600/400",
+            alt: "צעצועים אקולוגיים לכלבים",
+            width: "100%",
+            rounded: "1rem"
+          }
         }
       ]
-    },
-    {
-      "type": "faq",
-      "headline": "שאלות נפוצות",
-      "questions": [
-        { "question": "האם הצעצועים בטוחים לכלבים קטנים?", "answer": "בהחלט. כל החומרים שלנו טבעיים ולא רעילים, והצעצועים מגיעים בגדלים שונים המותאמים לגזעים קטנים וגדולים." },
-        { "question": "איך מנקים את הצעצועים?", "answer": "את רוב הצעצועים שלנו ניתן לכבס במכונה בתוכנית עדינה. הוראות ניקוי מפורטות מצורפות לכל מוצר." },
-        { "question": "מהי מדיניות המשלוחים שלכם?", "answer": "אנחנו מציעים משלוח מהיר לכל חלקי הארץ תוך 3-5 ימי עסקים." }
-      ]
-    },
-    {
-      "type": "cta",
-      "headline": "פנקו את הכלב שלכם עוד היום!",
-      "subheadline": "הצטרפו למאות בעלי כלבים שכבר בחרו בטוב ביותר עבור חיות המחמד שלהם.",
-      "cta": { "text": "לכל הצעצועים", "href": "#" }
     }
-  ]
+  ],
 };
 
 export function Editor() {

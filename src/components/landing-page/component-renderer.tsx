@@ -1,66 +1,79 @@
 
 "use client";
 
-import { Section } from "./types";
-import { HeroSection } from "./hero-section";
-import { TestimonialsSection } from "./testimonials-section";
-import { FaqSection } from "./faq-section";
-import { PricingSection } from "./pricing-section";
-import { CtaSection } from "./cta-section";
-import { VideoSection } from "./video-section";
-import { TextImageSection } from "./text-image-section";
-import { RichTextSection } from "./rich-text-section";
+import React from "react";
+import type { PageComponent, PageData } from "./types";
 
+// NOTE: These are placeholder components. We will create the real ones in the next steps.
 const componentMap: { [key: string]: React.ComponentType<any> } = {
-  hero: HeroSection,
-  testimonials: TestimonialsSection,
-  faq: FaqSection,
-  pricing: PricingSection,
-  cta: CtaSection,
-  video: VideoSection,
-  "text-image": TextImageSection,
-  richtext: RichTextSection,
+  RichText: (props: any) => <div>RichText Component: {JSON.stringify(props.content)}</div>,
+  Image: (props: any) => <img src={props.src} alt={props.alt} style={{ maxWidth: '100%' }} />,
+  Button: (props: any) => <button>{props.text}</button>,
+  Video: (props: any) => <div>Video Component: {props.youtubeId}</div>,
+  Input: (props: any) => <input placeholder={props.placeholder} />,
+  Checkbox: (props: any) => <div><input type="checkbox" /> {props.label}</div>,
+  Divider: (props: any) => <hr />,
+  Carousel: (props: any) => <div>Carousel Component</div>,
+  Form: (props: any) => <form>{props.children}</form>,
+  Container: (props: any) => (
+    <div style={props.style} data-container-id={props.id}>
+      {props.children}
+    </div>
+  ),
 };
 
-type ComponentRendererProps = {
-  sections: Section[];
-  onUpdate: (sections: Section[]) => void;
-};
+const RenderComponent = ({ component }: { component: PageComponent }): React.ReactElement | null => {
+  const Component = componentMap[component.type];
 
-export function ComponentRenderer({ sections, onUpdate }: ComponentRendererProps) {
-  if (!sections || !Array.isArray(sections)) {
+  if (!Component) {
+    console.warn(`Component of type "${component.type}" not found.`, component);
     return (
-      <div className="py-20 text-center">
-        <p className="text-muted-foreground">No page sections found.</p>
+      <div className="py-12 bg-destructive/10 text-center">
+        <p className="text-destructive font-semibold">
+          Error: Component type "{component.type}" is not supported.
+        </p>
       </div>
     );
   }
 
-  const handleSectionUpdate = (index: number, newProps: Partial<Section>) => {
-    const updatedSections = [...sections];
-    updatedSections[index] = { ...updatedSections[index], ...newProps };
-    onUpdate(updatedSections);
-  };
+  // For containers, we need to recursively render children
+  if (component.type === "Container" && component.children) {
+    return (
+      <Component {...component.props} id={component.id}>
+        {component.children.map((child) => (
+          <RenderComponent key={child.id} component={child} />
+        ))}
+      </Component>
+    );
+  }
+  
+  // For atomic components
+  return <Component {...component.props} />;
+};
+
+
+type ComponentRendererProps = {
+  pageData: PageData | null;
+  onUpdate: (pageData: PageData) => void;
+};
+
+export function ComponentRenderer({ pageData, onUpdate }: ComponentRendererProps) {
+  if (!pageData || !pageData.pageStructure || !Array.isArray(pageData.pageStructure)) {
+    return (
+      <div className="py-20 text-center">
+        <p className="text-muted-foreground">No page structure found.</p>
+      </div>
+    );
+  }
+
+  // The onUpdate function will need to be adapted later to handle updates to the new structure.
+  // For now, we are just focusing on rendering.
 
   return (
     <>
-      {sections.map((section, index) => {
-        const Component = componentMap[section.type];
-        if (!Component) {
-          console.warn(
-            `Component of type "${section.type}" not found.`,
-            section
-          );
-          return (
-            <div key={index} className="py-12 bg-destructive/10 text-center">
-              <p className="text-destructive font-semibold">
-                Error: Component type "{section.type}" is not supported.
-              </p>
-            </div>
-          );
-        }
-        return <Component key={index} {...section} onUpdate={(newProps: Partial<Section>) => handleSectionUpdate(index, newProps)} />;
-      })}
+      {pageData.pageStructure.map((component) => (
+        <RenderComponent key={component.id} component={component} />
+      ))}
     </>
   );
 }
