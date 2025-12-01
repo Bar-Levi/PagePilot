@@ -119,4 +119,7 @@ export const EditorStateProvider = ({
 export const useEditorState = () => {
     const context = useContext(EditorStateContext);
     if (!context) {
-        throw new Error('useEditorState
+        throw new Error('useEditorState must be used within an EditorStateProvider');
+    }
+    return context;
+};

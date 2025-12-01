@@ -75,4 +75,33 @@ export function RichTextToolbar() {
       <Button variant="ghost" size="icon" className={cn("hover:bg-muted", activeStyles.align === 'left' && "bg-muted")} onClick={handleAlign('left')}>
         <AlignLeft className="w-4 h-4" />
       </Button>
-      <Button variant="ghost" size="icon" className={cn("hover
+      <Button variant="ghost" size="icon" className={cn("hover:bg-muted", activeStyles.align === 'center' && "bg-muted")} onClick={handleAlign('center')}>
+        <AlignCenter className="w-4 h-4" />
+      </Button>
+       <Button variant="ghost" size="icon" className={cn("hover:bg-muted", activeStyles.align === 'right' && "bg-muted")} onClick={handleAlign('right')}>
+        <AlignRight className="w-4 h-4" />
+      </Button>
+      <Separator orientation="vertical" className="h-6" />
+        <div className="flex items-center gap-2">
+            <Label htmlFor="font-size" className="text-sm">Size</Label>
+            <Input 
+                type="number" 
+                id="font-size" 
+                className="w-16 h-8"
+                value={activeStyles.size || ''}
+                onChange={(e) => handleStyleChange('size', parseInt(e.target.value, 10))}
+            />
+        </div>
+        <div className="flex items-center gap-2">
+            <Label htmlFor="font-color" className="text-sm">Color</Label>
+            <Input 
+                type="color" 
+                id="font-color" 
+                className="w-8 h-8 p-1"
+                value={activeStyles.color || '#000000'}
+                onChange={(e) => handleStyleChange('color', e.target.value)}
+            />
+        </div>
+    </div>
+  );
+}
