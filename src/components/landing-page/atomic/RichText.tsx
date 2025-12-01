@@ -14,28 +14,22 @@ const renderNodeToHTML = (node: RichTextNode): string => {
   // Replace newlines with <br> for multiline support
   content = content.replace(/\n/g, "<br />");
   
-  if (node.bold) {
-    content = `<b>${content}</b>`;
-  }
-  if (node.italic) {
-    content = `<i>${content}</i>`;
-  }
-  if (node.underline) {
-    content = `<u>${content}</u>`;
-  }
-
   const styles: string[] = [];
+  if (node.bold) styles.push(`font-weight: 700`);
+  if (node.italic) styles.push(`font-style: italic`);
+  if (node.underline) styles.push(`text-decoration: underline`);
   if (node.color) styles.push(`color: ${node.color}`);
   if (node.size) styles.push(`font-size: ${node.size}px`);
   if (node.font) styles.push(`font-family: ${node.font}`);
 
-  if (styles.length > 0 || node.link) {
-     const styleString = styles.join('; ');
-     const tag = node.link ? `a href="${node.link}" target="_blank" rel="noopener noreferrer"` : 'span';
-     content = `<${tag} style="${styleString}">${content}</${tag}>`;
+  if (styles.length === 0 && !node.link) {
+    return content;
   }
 
-  return content;
+  const styleString = styles.join('; ');
+  const tag = node.link ? `a href="${node.link}" target="_blank" rel="noopener noreferrer"` : 'span';
+  
+  return `<${tag} style="${styleString}">${content}</${tag}>`;
 };
 
 // Recursive parser to handle nested styles
@@ -51,7 +45,7 @@ const parseNodeToRichText = (node: Node, inheritedStyles: Partial<RichTextNode> 
     const el = node as HTMLElement;
     const newStyles: Partial<RichTextNode> = { ...inheritedStyles };
 
-    // Apply tag-based styles
+    // Apply tag-based styles first
     switch (el.tagName.toLowerCase()) {
         case 'b':
         case 'strong':
@@ -69,13 +63,20 @@ const parseNodeToRichText = (node: Node, inheritedStyles: Partial<RichTextNode> 
             break;
     }
 
-    // Apply inline styles
+    // Apply inline styles, which can override tag-based ones
+    if (el.style.fontWeight === 'bold' || parseInt(el.style.fontWeight) >= 700) newStyles.bold = true;
+    if (el.style.fontWeight === 'normal') delete newStyles.bold;
+    
+    if (el.style.fontStyle === 'italic') newStyles.italic = true;
+    if (el.style.fontStyle === 'normal') delete newStyles.italic;
+
+    if (el.style.textDecoration === 'underline') newStyles.underline = true;
+    // Note: checking for 'none' to remove underline is complex as it can be inherited. Sticking to adding it for now.
+    
     if (el.style.color) newStyles.color = el.style.color;
     if (el.style.fontSize) newStyles.size = parseInt(el.style.fontSize, 10);
     if (el.style.fontFamily) newStyles.font = el.style.fontFamily;
-    if (el.style.fontWeight === 'bold' || parseInt(el.style.fontWeight) >= 700) newStyles.bold = true;
-    if (el.style.fontStyle === 'italic') newStyles.italic = true;
-    if (el.style.textDecoration === 'underline') newStyles.underline = true;
+
 
     // Recursively parse children with the new styles
     let childNodes: RichTextNode[] = [];
