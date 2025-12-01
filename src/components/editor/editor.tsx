@@ -1,17 +1,15 @@
 
 "use client";
 
-import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { generateLandingPage } from "@/ai/flows/generate-landing-page-from-prompt";
 import type { PageData } from "../landing-page/types";
-import { OnboardingModal } from "./onboarding-modal";
 import { EditorSidebar } from "./editor-sidebar";
 import { Canvas } from "./canvas";
-import { Rocket, Download, Settings, Code, Share2 } from "lucide-react";
+import { Rocket, Download, Settings, Share2, Undo, Redo } from "lucide-react";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import { useHistoryState } from "@/hooks/use-history-state";
 
 const defaultPageData: PageData = {
   "pageStructure": [
@@ -66,87 +64,12 @@ const defaultPageData: PageData = {
 };
 
 export function Editor() {
-  const [pageData, setPageData] = useState<PageData | null>(defaultPageData);
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-
-  const handleGenerate = async (formData: {
-    businessDescription: string;
-    targetAudience: string;
-    tone: string;
-  }) => {
-    setIsLoading(true);
-    setPageData(null);
-    try {
-      const result = await generateLandingPage(formData);
-      
-      let pageStructureString = result.pageStructure;
-      
-      // Handle cases where the response is wrapped in markdown
-      if (pageStructureString.startsWith("```json")) {
-        pageStructureString = pageStructureString.substring(7, pageStructureString.length - 3).trim();
-      }
-
-      let parsedData;
-      try {
-        // Attempt to fix common AI JSON errors, like trailing commas
-        const fixedJsonString = pageStructureString
-          .replace(/,\s*([}\]])/g, '$1') // Remove trailing commas
-          .replace(/(\r\n|\n|\r)/gm, ""); // Remove newlines
-
-        parsedData = JSON.parse(fixedJsonString);
-      } catch (e) {
-        console.error("Could not parse JSON:", e);
-        throw new Error("Invalid JSON response from AI.");
-      }
-
-      // The AI sometimes wraps the response in another pageStructure object.
-      if (parsedData.pageStructure) {
-        parsedData = { pageStructure: parsedData.pageStructure };
-      }
-      
-      // The AI can also return an array directly, so we wrap it.
-      if (Array.isArray(parsedData)) {
-        parsedData = { pageStructure: parsedData };
-      }
-      
-      // The AI can also return an array in the pageStructure property
-      if (Array.isArray(parsedData.pageStructure)) {
-        setPageData({ pageStructure: parsedData.pageStructure });
-      } else {
-         throw new Error("Invalid page structure format from AI.");
-      }
-      
-      toast({
-        title: "הדף נוצר!",
-        description: "דף הנחיתה החדש שלך מוכן.",
-      });
-    } catch (error) {
-      console.error("Failed to generate or parse page data:", error);
-      toast({
-        variant: "destructive",
-        title: "יצירה נכשלה",
-        description:
-          "הייתה שגיאה ביצירת הדף שלך. אנא נסה שוב.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  const { state: pageData, setState: setPageData, undo, redo, canUndo, canRedo } = useHistoryState<PageData | null>(defaultPageData);
+  
   const handleUpdate = (newStructure: PageData) => {
     setPageData(newStructure);
   };
   
-  const handleLoadingComplete = () => {
-    // This function is no longer strictly necessary but kept for potential future use.
-  }
-
-  if (!pageData && !isLoading) {
-    // Set isGenerating to false since we are not using the modal for generation in this flow.
-    return <OnboardingModal onGenerate={handleGenerate} isGenerating={false} />;
-  }
-
   return (
     <TooltipProvider>
       <div className="flex h-screen w-screen bg-muted/40">
@@ -162,6 +85,26 @@ export function Editor() {
               <h1 className="text-lg font-semibold">Editor</h1>
             </div>
             <div className="flex items-center gap-2">
+               <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon" onClick={undo} disabled={!canUndo}>
+                    <Undo className="w-5 h-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Undo (Ctrl+Z)</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon" onClick={redo} disabled={!canRedo}>
+                    <Redo className="w-5 h-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Redo (Ctrl+Y)</p>
+                </TooltipContent>
+              </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="outline" size="icon">
@@ -191,9 +134,8 @@ export function Editor() {
           <div className="flex-1 overflow-auto">
             <Canvas
               pageData={pageData}
-              isLoading={isLoading}
+              isLoading={false}
               onUpdate={handleUpdate}
-              onLoadingComplete={handleLoadingComplete}
             />
           </div>
         </main>

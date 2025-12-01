@@ -22,6 +22,16 @@ export function TestimonialsSection({
     onUpdate({ testimonials: updatedTestimonials });
   }
 
+  const handleAvatarClick = (index: number) => {
+    const currentSrc = displayTestimonials[index].avatar?.src || '';
+    const newSrc = window.prompt("Enter new image URL:", currentSrc);
+    if (newSrc) {
+        const updatedTestimonials = [...displayTestimonials];
+        updatedTestimonials[index].avatar.src = newSrc;
+        onUpdate({ testimonials: updatedTestimonials });
+    }
+  }
+
   return (
     <section className="py-24 md:py-32 bg-secondary">
       <div className="container">
@@ -48,7 +58,10 @@ export function TestimonialsSection({
                   "{testimonial.quote}"
                 </blockquote>
                 <div className="flex items-center gap-4 mt-auto">
-                  <div className="relative w-12 h-12 rounded-full overflow-hidden">
+                  <div 
+                    className="relative w-12 h-12 rounded-full overflow-hidden cursor-pointer group"
+                    onClick={() => handleAvatarClick(index)}
+                  >
                     <Image
                       src={testimonial.avatar?.src || `https://picsum.photos/seed/avatar${index+1}/100/100`}
                       alt={testimonial.avatar?.alt || testimonial.author}
@@ -56,6 +69,7 @@ export function TestimonialsSection({
                       className="object-cover"
                       data-ai-hint="person portrait"
                     />
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
                   </div>
                   <div>
                     <p 

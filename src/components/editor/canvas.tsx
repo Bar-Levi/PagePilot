@@ -8,7 +8,6 @@ type CanvasProps = {
   pageData: PageData | null;
   isLoading: boolean;
   onUpdate: (data: PageData) => void;
-  onLoadingComplete: () => void;
 };
 
 function LoadingSkeleton() {

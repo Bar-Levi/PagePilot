@@ -14,6 +14,13 @@ export function TextImageSection({
   const imageUrl = image?.src || placeholderImage?.imageUrl || "https://picsum.photos/seed/text-image-placeholder/600/400";
   const imageAlt = image?.alt || "Feature image";
   
+  const handleImageClick = () => {
+    const newSrc = window.prompt("Enter new image URL:", imageUrl);
+    if (newSrc) {
+        onUpdate({ image: { ...image, src: newSrc } });
+    }
+  };
+
   return (
     <section className="py-24 md:py-32 bg-background">
       <div className="container">
@@ -45,7 +52,10 @@ export function TextImageSection({
               {text || "Describe the feature or benefit in detail here. Explain how it helps the user and what makes it special."}
             </p>
           </div>
-          <div className="aspect-video relative overflow-hidden rounded-lg shadow-lg">
+          <div 
+            className="aspect-video relative overflow-hidden rounded-lg shadow-lg cursor-pointer group"
+            onClick={handleImageClick}
+          >
             <Image
               src={imageUrl}
               alt={imageAlt}
@@ -53,6 +63,11 @@ export function TextImageSection({
               className="object-cover"
               data-ai-hint="product feature"
             />
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                <span className="text-white bg-black/50 rounded-md px-3 py-1 text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                    Click to edit image
+                </span>
+            </div>
           </div>
         </div>
       </div>
