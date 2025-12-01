@@ -8,7 +8,8 @@ export function TextImageSection({
   text,
   image,
   imagePosition = "right",
-}: TextImageSectionData) {
+  onUpdate,
+}: TextImageSectionData & { onUpdate: (d: Partial<TextImageSectionData>) => void }) {
   const placeholderImage = PlaceHolderImages.find(p => p.id === 'feature-1');
   const imageUrl = image?.src || placeholderImage?.imageUrl || "https://picsum.photos/seed/text-image-placeholder/600/400";
   const imageAlt = image?.alt || "Feature image";
@@ -27,10 +28,20 @@ export function TextImageSection({
               imagePosition === "left" && "md:order-last"
             )}
           >
-            <h2 className="text-3xl md:text-4xl font-bold font-headline">
+            <h2 
+              className="text-3xl md:text-4xl font-bold font-headline"
+              contentEditable
+              suppressContentEditableWarning
+              onBlur={(e) => onUpdate({ headline: e.currentTarget.textContent || "" })}
+            >
               {headline || "Feature Headline"}
             </h2>
-            <p className="text-lg text-muted-foreground">
+            <p 
+              className="text-lg text-muted-foreground"
+              contentEditable
+              suppressContentEditableWarning
+              onBlur={(e) => onUpdate({ text: e.currentTarget.textContent || "" })}
+            >
               {text || "Describe the feature or benefit in detail here. Explain how it helps the user and what makes it special."}
             </p>
           </div>

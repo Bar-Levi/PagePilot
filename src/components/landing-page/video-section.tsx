@@ -2,7 +2,7 @@ import { PlayCircle } from "lucide-react";
 import type { VideoSectionData } from "./types";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 
-export function VideoSection({ headline, youtubeId }: VideoSectionData) {
+export function VideoSection({ headline, youtubeId, onUpdate }: VideoSectionData & { onUpdate: (d: Partial<VideoSectionData>) => void }) {
   const videoSrc = `https://www.youtube.com/embed/${youtubeId || 'dQw4w9WgXcQ'}`;
   const placeholderImage = PlaceHolderImages.find(p => p.id === 'video-placeholder');
 
@@ -10,7 +10,12 @@ export function VideoSection({ headline, youtubeId }: VideoSectionData) {
     <section className="py-24 md:py-32 bg-background">
       <div className="container">
         <div className="text-center space-y-4 mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold font-headline">
+          <h2 
+            className="text-3xl md:text-4xl font-bold font-headline"
+            contentEditable
+            suppressContentEditableWarning
+            onBlur={(e) => onUpdate({ headline: e.currentTarget.textContent || "" })}
+          >
             {headline || "See It in Action"}
           </h2>
         </div>

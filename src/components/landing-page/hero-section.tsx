@@ -9,7 +9,8 @@ export function HeroSection({
   subheadline,
   cta,
   image,
-}: HeroSectionData) {
+  onUpdate
+}: HeroSectionData & { onUpdate: (d: Partial<HeroSectionData>) => void }) {
   const placeholderImage = PlaceHolderImages.find(p => p.id === 'hero-1');
   const imageUrl = image?.src || placeholderImage?.imageUrl || "https://picsum.photos/seed/hero-placeholder/1200/800";
   const imageAlt = image?.alt || "Hero image";
@@ -26,10 +27,20 @@ export function HeroSection({
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
       <div className="relative container h-full flex flex-col items-center justify-center text-center text-white space-y-6">
-        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter font-headline">
+        <h1 
+          className="text-4xl md:text-6xl font-extrabold tracking-tighter font-headline"
+          contentEditable
+          suppressContentEditableWarning
+          onBlur={(e) => onUpdate({ headline: e.currentTarget.textContent || "" })}
+        >
           {headline || "Your Compelling Headline Here"}
         </h1>
-        <p className="max-w-3xl text-lg md:text-xl text-white/90">
+        <p 
+          className="max-w-3xl text-lg md:text-xl text-white/90"
+          contentEditable
+          suppressContentEditableWarning
+          onBlur={(e) => onUpdate({ subheadline: e.currentTarget.textContent || "" })}
+        >
           {subheadline ||
             "This is a catchy subheadline that explains your value proposition."}
         </p>
