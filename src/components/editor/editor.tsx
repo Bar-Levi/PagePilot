@@ -116,22 +116,22 @@ export function Editor() {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Export Code (Coming Soon)</p>
+                  <p>Export HTML + Tailwind (Coming Soon)</p>
                 </TooltipContent>
               </Tooltip>
-              <Tooltip>
+               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon">
+                  <Button variant="outline" size="icon" disabled>
                     <Settings className="w-5 h-5" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Page Settings (Coming Soon)</p>
+                  <p>Analytics Integration (Coming Soon)</p>
                 </TooltipContent>
               </Tooltip>
-               <Button>
+               <Button disabled>
                 <Share2 className="w-4 h-4 mr-2"/>
-                Publish
+                Deploy
               </Button>
             </div>
           </header>

@@ -1,5 +1,5 @@
 "use client";
-import { Blocks, Layers, Palette, Settings } from "lucide-react";
+import { Blocks, Layers, Palette, Settings, Sparkles } from "lucide-react";
 
 import {
   Tabs,
@@ -10,16 +10,17 @@ import {
 import { ComponentPalette } from "./component-palette";
 import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
+import { AiCopywritingPanel } from "./ai-copywriting-panel";
 
 export function EditorSidebar() {
   return (
-    <aside className="w-[300px] bg-background border-r flex flex-col">
+    <aside className="w-[350px] bg-background border-r flex flex-col">
       <div className="p-4">
         <h2 className="text-xl font-semibold font-headline">PagePilot</h2>
       </div>
       <Separator />
       <Tabs defaultValue="components" className="flex-1 flex flex-col">
-        <TabsList className="grid w-full grid-cols-4 rounded-none h-auto p-2">
+        <TabsList className="grid w-full grid-cols-5 rounded-none h-auto p-2">
           <TabsTrigger value="components" className="flex flex-col gap-1 h-14">
             <Blocks className="w-5 h-5" />
             <span className="text-xs">Add</span>
@@ -27,6 +28,10 @@ export function EditorSidebar() {
           <TabsTrigger value="layers" className="flex flex-col gap-1 h-14" disabled>
             <Layers className="w-5 h-5" />
             <span className="text-xs">Layers</span>
+          </TabsTrigger>
+          <TabsTrigger value="ai-copy" className="flex flex-col gap-1 h-14">
+            <Sparkles className="w-5 h-5" />
+            <span className="text-xs">AI Copy</span>
           </TabsTrigger>
           <TabsTrigger value="style" className="flex flex-col gap-1 h-14" disabled>
             <Palette className="w-5 h-5" />
@@ -45,6 +50,9 @@ export function EditorSidebar() {
             <div className="p-4 text-center text-sm text-muted-foreground">
               Layer management coming soon.
             </div>
+          </TabsContent>
+          <TabsContent value="ai-copy">
+            <AiCopywritingPanel />
           </TabsContent>
           <TabsContent value="style">
             <div className="p-4 text-center text-sm text-muted-foreground">
