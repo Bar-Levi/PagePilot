@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Section } from "./types";
@@ -8,6 +9,7 @@ import { PricingSection } from "./pricing-section";
 import { CtaSection } from "./cta-section";
 import { VideoSection } from "./video-section";
 import { TextImageSection } from "./text-image-section";
+import { RichTextSection } from "./rich-text-section";
 
 const componentMap: { [key: string]: React.ComponentType<any> } = {
   hero: HeroSection,
@@ -17,6 +19,7 @@ const componentMap: { [key: string]: React.ComponentType<any> } = {
   cta: CtaSection,
   video: VideoSection,
   "text-image": TextImageSection,
+  richtext: RichTextSection,
 };
 
 type ComponentRendererProps = {

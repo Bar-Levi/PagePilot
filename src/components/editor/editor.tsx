@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useToast } from "@/hooks/use-toast";
 import type { PageData } from "../landing-page/types";
 import { EditorSidebar } from "./editor-sidebar";
 import { Canvas } from "./canvas";
@@ -19,6 +18,16 @@ const defaultPageData: PageData = {
       "subheadline": "צעצועים אקולוגיים בעבודת יד, כי לחבר הכי טוב שלך מגיע את הטוב ביותר.",
       "cta": { "text": "קנו עכשיו", "href": "#pricing" },
       "image": { "src": "https://picsum.photos/seed/dog-hero/1200/800", "alt": "כלב שמח משחק עם צעצוע" }
+    },
+    {
+      "type": "richtext",
+      "align": "center",
+      "spacing": 8,
+      "content": [
+        { "text": "ברוכים הבאים לעולם של ", "size": 20 },
+        { "text": "צעצועי כלבים", "size": 20, "bold": true, "color": "hsl(var(--primary))" },
+        { "text": " שעשויים באהבה ודאגה לסביבה!", "size": 20 }
+      ]
     },
     {
       "type": "text-image",

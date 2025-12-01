@@ -1,3 +1,4 @@
+
 export type Cta = {
   text: string;
   href: string;
@@ -6,6 +7,17 @@ export type Cta = {
 export type Image = {
   src: string;
   alt: string;
+};
+
+export type RichTextNode = {
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  color?: string;
+  size?: number;
+  font?: string;
+  link?: string;
 };
 
 export type Testimonial = {
@@ -45,6 +57,16 @@ export type TextImageSectionData = {
   imagePosition: "left" | "right";
 };
 
+export type RichTextSectionData = {
+  type: "richtext";
+  content: RichTextNode[];
+  align?: "left" | "right" | "center" | "justify";
+  spacing?: number;
+  background?: string;
+  padding?: number;
+};
+
+
 export type TestimonialsSectionData = {
   type: "testimonials";
   headline: string;
@@ -83,7 +105,8 @@ export type Section =
   | FaqSectionData
   | PricingSectionData
   | VideoSectionData
-  | CtaSectionData;
+  | CtaSectionData
+  | RichTextSectionData;
 
 export type PageData = {
   pageStructure: Section[];
