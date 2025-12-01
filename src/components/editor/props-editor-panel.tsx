@@ -109,7 +109,7 @@ export function PropsEditorPanel({ selectedComponent }: PropsEditorPanelProps) {
         <div className="p-4 space-y-4" dir="rtl">
             <div>
                 <h3 className="text-md font-medium">עריכת רכיב</h3>
-                <p className="text-sm text_muted-foreground">סוג: {selectedComponent.type}</p>
+                <p className="text-sm text-muted-foreground">סוג: {selectedComponent.type}</p>
             </div>
             
             <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>

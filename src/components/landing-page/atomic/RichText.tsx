@@ -17,14 +17,17 @@ const renderNodeToHTML = (node: RichTextNode): string => {
   if (node.size) styles.push(`font-size: ${node.size}px`);
   if (node.font) styles.push(`font-family: ${node.font}`);
 
-  if (styles.length === 0 && !node.link) {
-    return content;
+  const styleString = styles.join('; ');
+  
+  if (node.link) {
+      return `<a href="${node.link}" target="_blank" rel="noopener noreferrer" style="${styleString}">${content}</a>`;
   }
 
-  const styleString = styles.join('; ');
-  const tag = node.link ? `a href="${node.link}" target="_blank" rel="noopener noreferrer"` : 'span';
+  if (styles.length > 0) {
+    return `<span style="${styleString}">${content}</span>`;
+  }
   
-  return `<${tag} style="${styleString}">${content}</${tag}>`;
+  return content;
 };
 
 const parseNodeToRichText = (node: Node, inheritedStyles: Partial<RichTextNode> = {}): RichTextNode[] => {
@@ -52,12 +55,17 @@ const parseNodeToRichText = (node: Node, inheritedStyles: Partial<RichTextNode> 
     if (el.style.fontSize) newStyles.size = parseInt(el.style.fontSize, 10);
     if (el.style.fontFamily) newStyles.font = el.style.fontFamily;
     
-    // Also check for legacy tags
+    // Also check for legacy tags and convert them to styles
     switch (el.tagName.toLowerCase()) {
         case 'b': case 'strong': newStyles.bold = true; break;
         case 'i': case 'em': newStyles.italic = true; break;
         case 'u': newStyles.underline = true; break;
         case 'a': newStyles.link = (el as HTMLAnchorElement).href; break;
+        case 'span': /* Styles are handled above */ break;
+        case 'font': // Legacy tag, read attributes
+            if (el.hasAttribute('color')) newStyles.color = el.getAttribute('color') || undefined;
+            // Note: size attribute on <font> is not px, so we ignore it to avoid bugs
+            break;
     }
 
     let childNodes: RichTextNode[] = [];
@@ -81,6 +89,7 @@ const parseHTMLToContent = (html: string): RichTextNode[] => {
        return [{ text: tempDiv.textContent }];
     }
 
+    // Merge adjacent nodes with identical styles
     if (nodes.length > 1) {
         const mergedNodes: RichTextNode[] = [nodes[0]];
         for (let i = 1; i < nodes.length; i++) {
@@ -89,7 +98,7 @@ const parseHTMLToContent = (html: string): RichTextNode[] => {
             const { text: prevText, ...prevStyles } = prev;
             const { text: currText, ...currStyles } = curr;
 
-            if (JSON.stringify(prevStyles) === JSON.stringify(currStyles) && prevText) {
+            if (JSON.stringify(prevStyles) === JSON.stringify(currStyles) && prevText && currText) {
                 prev.text += currText;
             } else {
                 mergedNodes.push(curr);
@@ -140,21 +149,26 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({ id, content
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) return;
     
+    // Use the modern, CSS-based command execution
     document.execCommand('styleWithCSS', false, 'true');
     switch (style) {
         case 'bold': document.execCommand('bold'); break;
         case 'italic': document.execCommand('italic'); break;
         case 'underline': document.execCommand('underline'); break;
         case 'size': document.execCommand('fontSize', false, '7'); 
-            // Hack to apply custom size
-            let fontElements = window.getSelection()!.focusNode!.parentElement!.getElementsByTagName('font');
-            for (let i = 0; i < fontElements.length; i++) {
-                fontElements[i].removeAttribute("size");
-                fontElements[i].style.fontSize = value + 'px';
-            }
+            // This is a necessary hack. We apply a dummy size, then iterate through
+            // the created <font> tags and replace them with a proper style.
+            const fontElements = editorRef.current.querySelectorAll('font[size="7"]');
+            fontElements.forEach(fontElement => {
+                const span = document.createElement('span');
+                span.style.fontSize = `${value}px`;
+                span.innerHTML = fontElement.innerHTML;
+                fontElement.parentNode?.replaceChild(span, fontElement);
+            });
             break;
         case 'color': document.execCommand('foreColor', false, value); break;
     }
+    // Revert to default behavior
     document.execCommand('styleWithCSS', false, 'false');
 
     handleUpdate();
@@ -168,6 +182,7 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({ id, content
     let node = selection.focusNode;
     if (!node) return { align };
 
+    // Traverse up to find the element node if the selection is on a text node
     if (node.nodeType === Node.TEXT_NODE) {
       node = node.parentElement;
     }
@@ -202,7 +217,7 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({ id, content
         __setGetActiveStylesFunction(undefined);
       }
     }
-  }, [isSelected]);
+  }, [isSelected, align]); // Added align dependency
   
 
   const handleBlur = () => {
