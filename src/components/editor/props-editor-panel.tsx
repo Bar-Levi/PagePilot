@@ -40,14 +40,6 @@ export function PropsEditorPanel({ selectedComponent }: PropsEditorPanelProps) {
         }
     }, [selectedComponent, reset]);
 
-    if (!selectedComponent) {
-        return (
-            <div className="p-4 text-center text-sm text-muted-foreground" dir="rtl">
-                בחר רכיב מהדף כדי לערוך את המאפיינים שלו.
-            </div>
-        );
-    }
-
     const handlePropsChange = (data: any) => {
         if (!selectedComponent) return;
         
@@ -61,6 +53,14 @@ export function PropsEditorPanel({ selectedComponent }: PropsEditorPanelProps) {
 
         updateComponentProps(selectedComponent.id, newProps);
     };
+
+    if (!selectedComponent) {
+        return (
+            <div className="p-4 text-center text-sm text-muted-foreground" dir="rtl">
+                בחר רכיב מהדף כדי לערוך את המאפיינים שלו.
+            </div>
+        );
+    }
 
     const renderFormFields = () => {
         switch (selectedComponent.type) {
