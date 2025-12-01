@@ -9,24 +9,8 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import { useHistoryState } from "@/hooks/use-history-state";
-import { v4 as uuidv4 } from 'uuid'; // We'll need a UUID library
-
-// Helper to generate a default structure for a new component
-const createDefaultComponent = (type: PageComponent['type']): PageComponent => {
-  const baseComponent = { id: uuidv4(), type, children: [] };
-  switch (type) {
-    case 'RichText':
-      return { ...baseComponent, props: { content: [{ text: "New Text Block" }] } };
-    case 'Button':
-      return { ...baseComponent, props: { text: "Click Me", href: "#" } };
-    case 'Image':
-      return { ...baseComponent, props: { src: "https://picsum.photos/seed/new-image/600/400", alt: "Placeholder" } };
-    case 'Container':
-    default:
-      return { ...baseComponent, props: { style: { padding: 16, gap: 16 } } };
-  }
-};
-
+import { v4 as uuidv4 } from 'uuid';
+import { useState } from "react";
 
 const defaultPageData: PageData = {
   pageStructure: [
@@ -115,15 +99,18 @@ const defaultPageData: PageData = {
 
 export function Editor() {
   const { state: pageData, setState: setPageData, undo, redo, canUndo, canRedo } = useHistoryState<PageData | null>(defaultPageData);
-  
+  const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
+
   const handleUpdate = (newStructure: PageData) => {
     setPageData(newStructure);
   };
+
+  const selectedComponent = pageData?.pageStructure.flatMap(c => [c, ...(c.children || [])]).find(c => c.id === selectedComponentId);
   
   return (
     <TooltipProvider>
       <div className="flex h-screen w-screen bg-muted/40">
-        <EditorSidebar />
+        <EditorSidebar selectedComponent={selectedComponent ?? null} />
         <main className="flex-1 flex flex-col h-screen">
           <header className="h-16 bg-background border-b flex items-center justify-between px-6">
             <div className="flex items-center gap-2">
@@ -186,6 +173,8 @@ export function Editor() {
               pageData={pageData}
               isLoading={false}
               onUpdate={handleUpdate}
+              selectedComponentId={selectedComponentId}
+              onSelectComponent={setSelectedComponentId}
             />
           </div>
         </main>

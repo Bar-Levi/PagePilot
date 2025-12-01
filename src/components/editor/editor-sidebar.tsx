@@ -1,5 +1,6 @@
+
 "use client";
-import { Blocks, Layers, Palette, Settings, Sparkles } from "lucide-react";
+import { Blocks, Layers, Palette, Settings, Sparkles, PencilRuler } from "lucide-react";
 
 import {
   Tabs,
@@ -11,8 +12,14 @@ import { ComponentPalette } from "./component-palette";
 import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
 import { AiCopywritingPanel } from "./ai-copywriting-panel";
+import { PropsEditorPanel } from "./props-editor-panel";
+import type { PageComponent } from "../landing-page/types";
 
-export function EditorSidebar() {
+type EditorSidebarProps = {
+  selectedComponent: PageComponent | null;
+};
+
+export function EditorSidebar({ selectedComponent }: EditorSidebarProps) {
   return (
     <aside className="w-[350px] bg-background border-r flex flex-col">
       <div className="p-4">
@@ -25,9 +32,9 @@ export function EditorSidebar() {
             <Blocks className="w-5 h-5" />
             <span className="text-xs">Add</span>
           </TabsTrigger>
-          <TabsTrigger value="layers" className="flex flex-col gap-1 h-14" disabled>
-            <Layers className="w-5 h-5" />
-            <span className="text-xs">Layers</span>
+          <TabsTrigger value="props" className="flex flex-col gap-1 h-14" disabled={!selectedComponent}>
+            <PencilRuler className="w-5 h-5" />
+            <span className="text-xs">Props</span>
           </TabsTrigger>
           <TabsTrigger value="ai-copy" className="flex flex-col gap-1 h-14">
             <Sparkles className="w-5 h-5" />
@@ -46,10 +53,8 @@ export function EditorSidebar() {
           <TabsContent value="components">
             <ComponentPalette />
           </TabsContent>
-          <TabsContent value="layers">
-            <div className="p-4 text-center text-sm text-muted-foreground">
-              Layer management coming soon.
-            </div>
+          <TabsContent value="props">
+            <PropsEditorPanel selectedComponent={selectedComponent} />
           </TabsContent>
           <TabsContent value="ai-copy">
             <AiCopywritingPanel />

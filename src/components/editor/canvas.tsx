@@ -9,6 +9,8 @@ type CanvasProps = {
   pageData: PageData | null;
   isLoading: boolean;
   onUpdate: (data: PageData) => void;
+  selectedComponentId: string | null;
+  onSelectComponent: (id: string | null) => void;
 };
 
 function LoadingSkeleton() {
@@ -44,15 +46,22 @@ export function Canvas({
   pageData,
   isLoading,
   onUpdate,
+  selectedComponentId,
+  onSelectComponent,
 }: CanvasProps) {
 
   return (
-    <div className="bg-background w-full min-h-full">
+    <div className="bg-background w-full min-h-full" onClick={() => onSelectComponent(null)}>
       <div className="max-w-7xl mx-auto">
         {isLoading ? (
           <LoadingSkeleton />
         ) : pageData?.pageStructure ? (
-          <ComponentRenderer pageData={pageData} onUpdate={onUpdate} />
+          <ComponentRenderer 
+            pageData={pageData} 
+            onUpdate={onUpdate}
+            selectedComponentId={selectedComponentId}
+            onSelectComponent={onSelectComponent}
+           />
         ) : (
           <div className="flex items-center justify-center h-[80vh]">
             <p className="text-muted-foreground">

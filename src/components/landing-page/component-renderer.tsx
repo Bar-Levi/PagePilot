@@ -9,6 +9,7 @@ import { Container } from "./atomic/Container";
 import { RichText } from "./atomic/RichText";
 import { ImageComponent } from "./atomic/Image";
 import { ButtonComponent } from "./atomic/Button";
+import { EditableComponentWrapper } from "../editor/editable-component-wrapper";
 
 // Map component types to the actual component implementations
 const componentMap: { [key: string]: React.ComponentType<any> } = {
@@ -24,7 +25,14 @@ const componentMap: { [key: string]: React.ComponentType<any> } = {
   Form: (props: any) => <form>{props.children}</form>,
 };
 
-const RenderComponent = ({ component }: { component: PageComponent }): React.ReactElement | null => {
+type RenderComponentProps = {
+  component: PageComponent;
+  selectedComponentId: string | null;
+  onSelectComponent: (id: string | null) => void;
+};
+
+
+const RenderComponent = ({ component, selectedComponentId, onSelectComponent }: RenderComponentProps): React.ReactElement | null => {
   const Component = componentMap[component.type];
 
   if (!Component) {
@@ -38,28 +46,47 @@ const RenderComponent = ({ component }: { component: PageComponent }): React.Rea
     );
   }
 
-  // For containers, we need to recursively render children
-  if (component.type === "Container" && component.children) {
-    return (
+  const isSelected = selectedComponentId === component.id;
+
+  const renderedComponent = (
+    // For containers, we need to recursively render children
+    (component.type === "Container" && component.children) ? (
       <Component {...component.props} id={component.id}>
         {component.children.map((child) => (
-          <RenderComponent key={child.id} component={child} />
+          <RenderComponent 
+            key={child.id} 
+            component={child} 
+            selectedComponentId={selectedComponentId}
+            onSelectComponent={onSelectComponent}
+            />
         ))}
       </Component>
-    );
-  }
-  
-  // For atomic components without children
-  return <Component {...component.props} />;
+    ) : (
+      // For atomic components without children
+      <Component {...component.props} />
+    )
+  );
+
+  return (
+    <EditableComponentWrapper
+      component={component}
+      isSelected={isSelected}
+      onSelect={onSelectComponent}
+    >
+      {renderedComponent}
+    </EditableComponentWrapper>
+  );
 };
 
 
 type ComponentRendererProps = {
   pageData: PageData | null;
   onUpdate: (pageData: PageData) => void;
+  selectedComponentId: string | null;
+  onSelectComponent: (id: string | null) => void;
 };
 
-export function ComponentRenderer({ pageData, onUpdate }: ComponentRendererProps) {
+export function ComponentRenderer({ pageData, onUpdate, selectedComponentId, onSelectComponent }: ComponentRendererProps) {
   if (!pageData || !pageData.pageStructure || !Array.isArray(pageData.pageStructure)) {
     return (
       <div className="py-20 text-center">
@@ -68,13 +95,15 @@ export function ComponentRenderer({ pageData, onUpdate }: ComponentRendererProps
     );
   }
 
-  // The onUpdate function will be used later for inline editing.
-  // For now, we are just focusing on rendering.
-
   return (
     <>
       {pageData.pageStructure.map((component) => (
-        <RenderComponent key={component.id} component={component} />
+        <RenderComponent 
+          key={component.id} 
+          component={component} 
+          selectedComponentId={selectedComponentId}
+          onSelectComponent={onSelectComponent}
+        />
       ))}
     </>
   );
