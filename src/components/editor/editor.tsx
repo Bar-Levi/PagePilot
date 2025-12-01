@@ -115,7 +115,6 @@ function EditorInternal() {
       <div className="flex h-screen w-screen bg-muted/40">
         <EditorSidebar selectedComponent={selectedComponent ?? null} />
         <main className="flex-1 flex flex-col h-screen">
-           <RichTextToolbar />
           <header className="h-16 bg-background border-b flex items-center justify-between px-6">
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" asChild>
@@ -172,6 +171,7 @@ function EditorInternal() {
               </Button>
             </div>
           </header>
+          <RichTextToolbar />
           <div className="flex-1 overflow-auto">
             <Canvas
               pageData={pageData}
