@@ -19,7 +19,7 @@ export function HeroSection({
   const handleImageClick = () => {
     const newSrc = window.prompt("Enter new image URL:", imageUrl);
     if (newSrc) {
-      onUpdate({ ...props, headline, subheadline, cta, image: { ...image, src: newSrc } });
+      onUpdate({ ...props, headline, subheadline, cta, image: { ...(image || { alt: '' }), src: newSrc } });
     }
   };
 
