@@ -10,7 +10,7 @@ import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import { useHistoryState } from "@/hooks/use-history-state";
 import { v4 as uuidv4 } from 'uuid';
-import { EditorStateProvider } from "@/hooks/use-editor-state";
+import { EditorStateProvider } from "@/hooks/use-editor-state.tsx";
 
 
 const defaultPageData: PageData = {

@@ -9,7 +9,7 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { useEditorState } from "@/hooks/use-editor-state";
+import { useEditorState } from "@/hooks/use-editor-state.tsx";
 import { useEffect } from "react";
 
 type PropsEditorPanelProps = {

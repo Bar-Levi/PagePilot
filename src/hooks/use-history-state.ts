@@ -2,7 +2,7 @@
 import { useState, useCallback, useMemo, useContext } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import type { PageData, PageComponent } from '@/components/landing-page/types';
-import { EditorStateContext } from './use-editor-state';
+import { EditorStateContext } from './use-editor-state.tsx';
 
 
 export function useHistoryState() {
@@ -83,4 +83,5 @@ export function useHistoryState() {
     canRedo,
   };
 }
+
 

@@ -1,4 +1,6 @@
 
+"use client";
+
 import { createContext, useState, useCallback, useContext, ReactNode } from 'react';
 import type { PageData, PageComponent } from '@/components/landing-page/types';
 
