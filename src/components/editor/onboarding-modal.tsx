@@ -51,6 +51,12 @@ export function OnboardingModal({ onGenerate, isGenerating }: OnboardingModalPro
     },
   });
 
+  function handleAutoFill() {
+    form.setValue('businessDescription', 'An online store that sells handmade eco-friendly dog toys.');
+    form.setValue('targetAudience', 'Dog owners in urban areas who care about the environment.');
+    form.setValue('tone', 'Playful and friendly');
+  }
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     await onGenerate(values);
   }
@@ -117,7 +123,12 @@ export function OnboardingModal({ onGenerate, isGenerating }: OnboardingModalPro
               />
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="flex-col-reverse sm:flex-col-reverse gap-2">
+               {process.env.NODE_ENV === 'development' && (
+                <Button type="button" variant="secondary" onClick={handleAutoFill} className="w-full">
+                  מילוי אוטומטי (בדיקה)
+                </Button>
+              )}
               <Button type="submit" disabled={isGenerating} className="w-full">
                 {isGenerating ? (
                   <Loader2 className="ml-2 h-4 w-4 animate-spin" />
