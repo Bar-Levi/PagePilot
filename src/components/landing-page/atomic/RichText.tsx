@@ -1,47 +1,52 @@
+
 "use client";
 import React, { useRef, useEffect, useCallback } from "react";
 import type { RichTextProps } from "../types";
 import { cn } from "@/lib/utils";
 import { useEditorState, ApplyStyleFunc, GetActiveStylesFunc } from "@/hooks/use-editor-state.tsx";
 
-// --- Utility Functions ---
-
 const getSelectionStyles = (
   editor: HTMLElement
 ): Record<string, string | boolean> => {
   const styles: Record<string, string | boolean> = {};
   const selection = window.getSelection();
-  if (!selection || selection.rangeCount === 0) return styles;
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return styles;
 
   let node = selection.focusNode;
-  if (!node) return styles;
-  
+  if (!node || !editor.contains(node)) return styles;
+
+  // Traverse up to find the element containing the text
   if (node.nodeType === Node.TEXT_NODE) {
     node = node.parentElement;
   }
   
-  if (node && editor.contains(node) && node instanceof HTMLElement) {
+  if (node && node instanceof HTMLElement) {
     const element = node as HTMLElement;
     const computedStyle = window.getComputedStyle(element);
 
-    styles.bold =
-      computedStyle.fontWeight === "bold" ||
-      parseInt(computedStyle.fontWeight) >= 700;
+    styles.bold = parseInt(computedStyle.fontWeight, 10) >= 700;
     styles.italic = computedStyle.fontStyle === "italic";
     styles.underline = computedStyle.textDecorationLine.includes("underline");
     
     const fontSize = computedStyle.fontSize;
     if (fontSize.endsWith('px')) {
-      styles.size = parseInt(fontSize, 10);
+        // Remove 'px' and convert to number
+        styles.size = parseInt(fontSize.replace('px', ''), 10);
     }
     
-    styles.color = computedStyle.color;
+    // Convert rgb to hex for the color input
+    const rgbColor = computedStyle.color;
+    try {
+        const hexColor = '#' + rgbColor.match(/\d+/g)!.map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
+        styles.color = hexColor;
+    } catch {
+        styles.color = '#000000'; // fallback
+    }
   }
 
   return styles;
 };
 
-// --- React Component ---
 
 export const RichText: React.FC<RichTextProps & { id: string }> = ({
   id,
@@ -51,102 +56,75 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({
   const {
     updateComponentProps,
     selectedComponentId,
-    registerTextActionHandlers,
+    textActionHandlers,
   } = useEditorState();
   const editorRef = useRef<HTMLDivElement>(null);
   const isSelected = selectedComponentId === id;
 
-  const applyStyle: ApplyStyleFunc = useCallback((style, value) => {
+  const handleApplyStyle: ApplyStyleFunc = useCallback((style, value) => {
     if (!editorRef.current) return;
-    document.execCommand("styleWithCSS", false, 'true');
+    document.execCommand('styleWithCSS', false, 'true');
 
     if (style === 'align') {
-        updateComponentProps(id, { align: value });
-        return;
-    }
-    
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
-
-    const range = selection.getRangeAt(0);
-
-    // Create a new span to wrap the selection
-    const span = document.createElement('span');
-
-    switch (style) {
-      case 'bold':
-        span.style.fontWeight = 'bold';
-        break;
-      case 'italic':
-        span.style.fontStyle = 'italic';
-        break;
-      case 'underline':
-        span.style.textDecoration = 'underline';
-        break;
-      case 'size':
-        if (value) span.style.fontSize = `${value}px`;
-        break;
-      case 'color':
-        if (value) span.style.color = value;
-        break;
-      default:
-        document.execCommand("styleWithCSS", false, 'false');
-        return;
-    }
-    
-    // This is a simplified approach. A real implementation would need to handle
-    // splitting nodes and merging styles. For now, we wrap.
-    try {
-        range.surroundContents(span);
-    } catch(e) {
-        // Fallback for cases where selection spans across multiple block elements
-        // which can't be wrapped by a single span.
-        if (style === 'bold') document.execCommand('bold');
-        if (style === 'italic') document.execCommand('italic');
-        if (style === 'underline') document.execCommand('underline');
-        if (style === 'foreColor' && value) document.execCommand('foreColor', false, value);
+      updateComponentProps(id, { align: value });
+      return;
     }
 
-    selection.removeAllRanges();
-    selection.addRange(range);
+    if (style === 'bold') document.execCommand('bold');
+    else if (style === 'italic') document.execCommand('italic');
+    else if (style === 'underline') document.execCommand('underline');
+    else if (style === 'foreColor') document.execCommand('foreColor', false, value);
+    else if (style === 'fontSize') {
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            const span = document.createElement('span');
+            span.style.fontSize = `${value}px`;
+            try {
+                range.surroundContents(span);
+            } catch (e) {
+                document.execCommand('fontSize', false, '7'); // Fallback size
+                const fontElements = editorRef.current.getElementsByTagName('font');
+                for (let i = 0; i < fontElements.length; i++) {
+                    if (fontElements[i].size === '7') {
+                        fontElements[i].style.fontSize = `${value}px`;
+                        fontElements[i].removeAttribute('size');
+                    }
+                }
+            }
+        }
+    }
     
-    // Update the component's HTML
     updateComponentProps(id, { html: editorRef.current.innerHTML });
-    document.execCommand("styleWithCSS", false, 'false');
+    document.execCommand('styleWithCSS', false, 'false');
   }, [id, updateComponentProps]);
 
-  const getActiveStyles: GetActiveStylesFunc = useCallback(() => {
+  const handleGetActiveStyles: GetActiveStylesFunc = useCallback(() => {
     if (!editorRef.current) return {};
     const styles = getSelectionStyles(editorRef.current);
     return { ...styles, align };
   }, [align]);
 
-
-  // Register/unregister the functions with the global state when this component is selected/deselected
   useEffect(() => {
     if (isSelected) {
-      registerTextActionHandlers({ applyStyle, getActiveStyles });
+      textActionHandlers.current = {
+        applyStyle: handleApplyStyle,
+        getActiveStyles: handleGetActiveStyles,
+      };
       
       return () => {
-        registerTextActionHandlers(null);
+        textActionHandlers.current = null;
       };
     }
-  }, [isSelected, registerTextActionHandlers, applyStyle, getActiveStyles]);
+  }, [isSelected, textActionHandlers, handleApplyStyle, handleGetActiveStyles]);
 
-  // Update DOM if HTML prop changes from outside (e.g., undo/redo)
+  // Update DOM only if HTML prop changes from outside (e.g., undo/redo)
+  // and only if the component is not currently selected to avoid cursor jumps.
   useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== html) {
+    if (editorRef.current && editorRef.current.innerHTML !== html && !isSelected) {
       editorRef.current.innerHTML = html;
     }
-  }, [html]);
-
-  const handleInput = () => {
-    if (editorRef.current) {
-      const newHtml = editorRef.current.innerHTML;
-      // We don't call updateComponentProps here on every input to avoid cursor jumps
-      // and performance issues. It's handled on blur or via explicit formatting actions.
-    }
-  };
+  }, [html, isSelected]);
   
   const handleBlur = () => {
       if (editorRef.current) {
@@ -162,7 +140,6 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({
       ref={editorRef}
       contentEditable={isSelected}
       suppressContentEditableWarning={true}
-      onInput={handleInput}
       onBlur={handleBlur}
       className={cn(
         "outline-none w-full",

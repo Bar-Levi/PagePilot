@@ -11,28 +11,33 @@ import { Label } from '../ui/label';
 import { useEffect, useState } from 'react';
 
 export function RichTextToolbar() {
-  const { selectedComponent, applyStyle, getActiveStyles } = useEditorState();
+  const { selectedComponent, textActionHandlers } = useEditorState();
   const [activeStyles, setActiveStyles] = useState<Record<string, any>>({});
-
+  
   const isVisible = selectedComponent?.type === 'RichText';
 
+  // This effect updates the toolbar's state based on the current selection.
   useEffect(() => {
-    if (isVisible && getActiveStyles) {
-      const update = () => setActiveStyles(getActiveStyles() || {});
-      
-      // Initial update
-      update();
-      
-      // Subsequent updates on selection change
-      document.addEventListener('selectionchange', update);
-      return () => {
-        document.removeEventListener('selectionchange', update);
-      };
-    } else {
-      setActiveStyles({});
-    }
-  }, [isVisible, getActiveStyles, selectedComponent]);
-  
+    const updateToolbarState = () => {
+      if (isVisible && textActionHandlers.current?.getActiveStyles) {
+        setActiveStyles(textActionHandlers.current.getActiveStyles() || {});
+      } else {
+        setActiveStyles({});
+      }
+    };
+    
+    // Update when component selection changes
+    updateToolbarState();
+
+    // Also update when the text selection inside the editor changes
+    document.addEventListener('selectionchange', updateToolbarState);
+    return () => {
+      document.removeEventListener('selectionchange', updateToolbarState);
+    };
+  }, [isVisible, selectedComponent, textActionHandlers]);
+
+  const applyStyle = textActionHandlers.current?.applyStyle;
+
   const handleFormat = (style: 'bold' | 'italic' | 'underline') => (e: React.MouseEvent) => {
     e.preventDefault();
     applyStyle?.(style);
@@ -44,7 +49,12 @@ export function RichTextToolbar() {
   };
   
   const handleStyleChange = (style: 'color' | 'size', value: string | number) => {
-    applyStyle?.(style, value);
+      if (style === 'color') {
+          applyStyle?.('foreColor', value);
+      }
+      if (style === 'size') {
+          applyStyle?.('fontSize', value);
+      }
   };
 
   if (!isVisible) {
@@ -87,7 +97,7 @@ export function RichTextToolbar() {
             <Input 
                 type="number" 
                 id="font-size" 
-                className="w-16 h-8"
+                className="w-20 h-8"
                 value={activeStyles.size || ''}
                 onChange={(e) => handleStyleChange('size', parseInt(e.target.value, 10))}
             />
