@@ -19,7 +19,12 @@ const componentMap: { [key: string]: React.ComponentType<any> } = {
   "text-image": TextImageSection,
 };
 
-export function ComponentRenderer({ sections }: { sections: Section[] }) {
+type ComponentRendererProps = {
+  sections: Section[];
+  onUpdate: (sections: Section[]) => void;
+};
+
+export function ComponentRenderer({ sections, onUpdate }: ComponentRendererProps) {
   if (!sections || !Array.isArray(sections)) {
     return (
       <div className="py-20 text-center">
@@ -27,6 +32,12 @@ export function ComponentRenderer({ sections }: { sections: Section[] }) {
       </div>
     );
   }
+
+  const handleSectionUpdate = (index: number, newProps: Partial<Section>) => {
+    const updatedSections = [...sections];
+    updatedSections[index] = { ...updatedSections[index], ...newProps };
+    onUpdate(updatedSections);
+  };
 
   return (
     <>
@@ -45,7 +56,7 @@ export function ComponentRenderer({ sections }: { sections: Section[] }) {
             </div>
           );
         }
-        return <Component key={index} {...section} />;
+        return <Component key={index} {...section} onUpdate={(newProps: Partial<Section>) => handleSectionUpdate(index, newProps)} />;
       })}
     </>
   );

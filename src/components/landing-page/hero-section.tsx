@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { HeroSectionData } from "./types";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export function HeroSection({
   headline,
@@ -9,7 +10,8 @@ export function HeroSection({
   cta,
   image,
 }: HeroSectionData) {
-  const imageUrl = image?.src || "https://picsum.photos/seed/hero-placeholder/1200/800";
+  const placeholderImage = PlaceHolderImages.find(p => p.id === 'hero-1');
+  const imageUrl = image?.src || placeholderImage?.imageUrl || "https://picsum.photos/seed/hero-placeholder/1200/800";
   const imageAlt = image?.alt || "Hero image";
 
   return (

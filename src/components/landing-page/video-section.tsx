@@ -1,8 +1,10 @@
 import { PlayCircle } from "lucide-react";
 import type { VideoSectionData } from "./types";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export function VideoSection({ headline, youtubeId }: VideoSectionData) {
   const videoSrc = `https://www.youtube.com/embed/${youtubeId || 'dQw4w9WgXcQ'}`;
+  const placeholderImage = PlaceHolderImages.find(p => p.id === 'video-placeholder');
 
   return (
     <section className="py-24 md:py-32 bg-background">

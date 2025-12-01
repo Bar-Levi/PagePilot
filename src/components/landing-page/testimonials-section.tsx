@@ -1,15 +1,16 @@
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import type { TestimonialsSectionData } from "./types";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export function TestimonialsSection({
   headline,
   testimonials,
 }: TestimonialsSectionData) {
-  const defaultTestimonials = [
-    { quote: "This is a game-changer! Highly recommended.", author: "Jane Doe", role: "CEO, Example Inc.", avatar: { src: "https://picsum.photos/seed/avatar1/100/100", alt: "Jane Doe" } },
-    { quote: "Absolutely love it. The best tool I've ever used.", author: "John Smith", role: "Developer, Tech Co.", avatar: { src: "https://picsum.photos/seed/avatar2/100/100", alt: "John Smith" } },
-    { quote: "Incredible results and so easy to use.", author: "Sam Wilson", role: "Designer, Creative Studio", avatar: { src: "https://picsum.photos/seed/avatar3/100/100", alt: "Sam Wilson" } },
+    const defaultTestimonials = [
+    { quote: "This is a game-changer! Highly recommended.", author: "Jane Doe", role: "CEO, Example Inc.", avatar: { src: PlaceHolderImages.find(p=>p.id==='avatar-1')?.imageUrl || "https://picsum.photos/seed/avatar1/100/100", alt: "Jane Doe" } },
+    { quote: "Absolutely love it. The best tool I've ever used.", author: "John Smith", role: "Developer, Tech Co.", avatar: { src: PlaceHolderImages.find(p=>p.id==='avatar-2')?.imageUrl || "https://picsum.photos/seed/avatar2/100/100", alt: "John Smith" } },
+    { quote: "Incredible results and so easy to use.", author: "Sam Wilson", role: "Designer, Creative Studio", avatar: { src: PlaceHolderImages.find(p=>p.id==='avatar-3')?.imageUrl || "https://picsum.photos/seed/avatar3/100/100", alt: "Sam Wilson" } },
   ];
   
   const displayTestimonials = testimonials && testimonials.length > 0 ? testimonials : defaultTestimonials;

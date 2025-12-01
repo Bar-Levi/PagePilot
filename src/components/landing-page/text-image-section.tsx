@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import type { TextImageSectionData } from "./types";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export function TextImageSection({
   headline,
@@ -8,7 +9,8 @@ export function TextImageSection({
   image,
   imagePosition = "right",
 }: TextImageSectionData) {
-  const imageUrl = image?.src || "https://picsum.photos/seed/text-image-placeholder/600/400";
+  const placeholderImage = PlaceHolderImages.find(p => p.id === 'feature-1');
+  const imageUrl = image?.src || placeholderImage?.imageUrl || "https://picsum.photos/seed/text-image-placeholder/600/400";
   const imageAlt = image?.alt || "Feature image";
   
   return (
