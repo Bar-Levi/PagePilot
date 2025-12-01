@@ -1,7 +1,7 @@
 
 "use client";
 
-import { createContext, useState, useCallback, useContext, ReactNode, useMemo, useEffect } from 'react';
+import { createContext, useState, useCallback, useContext, ReactNode, useMemo, useEffect, useRef } from 'react';
 import type { PageData, PageComponent } from '@/components/landing-page/types';
 
 // Helper function to recursively find and update a component
@@ -39,8 +39,8 @@ const findComponentRecursively = (components: PageComponent[], id: string): Page
 };
 
 // --- Types ---
-type ApplyStyleFunc = (style: string, value?: any) => void;
-type GetActiveStylesFunc = () => Record<string, any>;
+export type ApplyStyleFunc = (style: string, value?: any) => void;
+export type GetActiveStylesFunc = () => Record<string, any>;
 
 type EditorContextType = {
   history: PageData[];
@@ -55,8 +55,7 @@ type EditorContextType = {
   // Functions for Rich Text Editor interaction
   applyStyle?: ApplyStyleFunc;
   getActiveStyles?: GetActiveStylesFunc;
-  setApplyStyle?: React.Dispatch<React.SetStateAction<(() => ApplyStyleFunc) | undefined>>;
-  setGetActiveStyles?: React.Dispatch<React.SetStateAction<(() => GetActiveStylesFunc) | undefined>>;
+  registerTextActionHandlers: (handlers: { applyStyle: ApplyStyleFunc; getActiveStyles: GetActiveStylesFunc } | null) => void;
 };
 
 export const EditorStateContext = createContext<EditorContextType | null>(null);
@@ -72,10 +71,12 @@ export const EditorStateProvider = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
   
-  // These hold a *function that returns a function*. This is a stable reference
-  // that allows the RichText component to register its own implementation.
-  const [applyStyleFn, setApplyStyle] = useState<() => ApplyStyleFunc>();
-  const [getActiveStylesFn, setGetActiveStyles] = useState<() => GetActiveStylesFunc>();
+  const textActionHandlers = useRef<{ applyStyle: ApplyStyleFunc; getActiveStyles: GetActiveStylesFunc } | null>(null);
+
+  const registerTextActionHandlers = useCallback((handlers: { applyStyle: ApplyStyleFunc; getActiveStyles: GetActiveStylesFunc } | null) => {
+    textActionHandlers.current = handlers;
+  }, []);
+
 
   const updateComponentProps = useCallback((id: string, newProps: any) => {
     const currentPageData = history[currentIndex];
@@ -94,14 +95,6 @@ export const EditorStateProvider = ({
     return findComponentRecursively(currentPageData.pageStructure, selectedComponentId);
   }, [selectedComponentId, history, currentIndex]);
 
-  // When the selected component changes, if it's not a RichText, clear the functions.
-  useEffect(() => {
-    if (selectedComponent?.type !== 'RichText') {
-      setApplyStyle(undefined);
-      setGetActiveStyles(undefined);
-    }
-  }, [selectedComponent]);
-
   const value: EditorContextType = {
     history,
     setHistory,
@@ -111,12 +104,9 @@ export const EditorStateProvider = ({
     setSelectedComponentId,
     selectedComponent,
     updateComponentProps,
-    // Execute the stored function to get the actual implementation
-    applyStyle: applyStyleFn ? applyStyleFn() : undefined,
-    getActiveStyles: getActiveStylesFn ? getActiveStylesFn() : undefined,
-    // Pass the setters down for registration
-    setApplyStyle: setApplyStyle as any,
-    setGetActiveStyles: setGetActiveStyles as any,
+    applyStyle: textActionHandlers.current?.applyStyle,
+    getActiveStyles: textActionHandlers.current?.getActiveStyles,
+    registerTextActionHandlers,
   };
 
   return (
@@ -129,7 +119,4 @@ export const EditorStateProvider = ({
 export const useEditorState = () => {
     const context = useContext(EditorStateContext);
     if (!context) {
-        throw new Error('useEditorState must be used within an EditorStateProvider');
-    }
-    return context;
-}
+        throw new Error('useEditorState

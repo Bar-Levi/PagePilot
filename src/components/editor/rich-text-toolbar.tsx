@@ -8,9 +8,30 @@ import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { useEffect, useState } from 'react';
 
 export function RichTextToolbar() {
   const { selectedComponent, applyStyle, getActiveStyles } = useEditorState();
+  const [activeStyles, setActiveStyles] = useState<Record<string, any>>({});
+
+  const isVisible = selectedComponent?.type === 'RichText';
+
+  useEffect(() => {
+    if (isVisible && getActiveStyles) {
+      const update = () => setActiveStyles(getActiveStyles() || {});
+      
+      // Initial update
+      update();
+      
+      // Subsequent updates on selection change
+      document.addEventListener('selectionchange', update);
+      return () => {
+        document.removeEventListener('selectionchange', update);
+      };
+    } else {
+      setActiveStyles({});
+    }
+  }, [isVisible, getActiveStyles, selectedComponent]);
   
   const handleFormat = (style: 'bold' | 'italic' | 'underline') => (e: React.MouseEvent) => {
     e.preventDefault();
@@ -25,9 +46,6 @@ export function RichTextToolbar() {
   const handleStyleChange = (style: 'color' | 'size', value: string | number) => {
     applyStyle?.(style, value);
   };
-
-  const isVisible = selectedComponent?.type === 'RichText';
-  const activeStyles = getActiveStyles?.() || {};
 
   if (!isVisible) {
     return (
@@ -57,33 +75,4 @@ export function RichTextToolbar() {
       <Button variant="ghost" size="icon" className={cn("hover:bg-muted", activeStyles.align === 'left' && "bg-muted")} onClick={handleAlign('left')}>
         <AlignLeft className="w-4 h-4" />
       </Button>
-      <Button variant="ghost" size="icon" className={cn("hover:bg-muted", activeStyles.align === 'center' && "bg-muted")} onClick={handleAlign('center')}>
-        <AlignCenter className="w-4 h-4" />
-      </Button>
-      <Button variant="ghost" size="icon" className={cn("hover:bg-muted", activeStyles.align === 'right' && "bg-muted")} onClick={handleAlign('right')}>
-        <AlignRight className="w-4 h-4" />
-      </Button>
-      <Separator orientation="vertical" className="h-6" />
-      <div className="flex items-center gap-2">
-        <Label htmlFor="font-size" className="text-sm">Size</Label>
-        <Input 
-          type="number"
-          id="font-size"
-          className="w-20 h-8"
-          value={activeStyles.size || ''}
-          onChange={(e) => handleStyleChange('size', parseInt(e.target.value, 10))}
-        />
-      </div>
-       <div className="flex items-center gap-2">
-        <Label htmlFor="font-color" className="text-sm">Color</Label>
-        <Input 
-          type="color"
-          id="font-color"
-          className="w-10 h-8 p-1"
-          value={activeStyles.color || '#000000'}
-          onChange={(e) => handleStyleChange('color', e.target.value)}
-        />
-      </div>
-    </div>
-  );
-}
+      <Button variant="ghost" size="icon" className={cn("hover

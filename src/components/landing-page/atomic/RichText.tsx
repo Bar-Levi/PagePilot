@@ -1,16 +1,11 @@
-
 "use client";
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, { useRef, useEffect, useCallback } from "react";
 import type { RichTextProps } from "../types";
 import { cn } from "@/lib/utils";
-import { useEditorState } from "@/hooks/use-editor-state.tsx";
+import { useEditorState, ApplyStyleFunc, GetActiveStylesFunc } from "@/hooks/use-editor-state.tsx";
 
 // --- Utility Functions ---
 
-/**
- * Gets the active styles (bold, color, etc.) from the current selection.
- * It traverses up the DOM tree from the selection to find the applied CSS styles.
- */
 const getSelectionStyles = (
   editor: HTMLElement
 ): Record<string, string | boolean> => {
@@ -20,12 +15,12 @@ const getSelectionStyles = (
 
   let node = selection.focusNode;
   if (!node) return styles;
-
+  
   if (node.nodeType === Node.TEXT_NODE) {
     node = node.parentElement;
   }
-
-  if (node && editor.contains(node)) {
+  
+  if (node && editor.contains(node) && node instanceof HTMLElement) {
     const element = node as HTMLElement;
     const computedStyle = window.getComputedStyle(element);
 
@@ -33,60 +28,17 @@ const getSelectionStyles = (
       computedStyle.fontWeight === "bold" ||
       parseInt(computedStyle.fontWeight) >= 700;
     styles.italic = computedStyle.fontStyle === "italic";
-    styles.underline = computedStyle.textDecoration.includes("underline");
+    styles.underline = computedStyle.textDecorationLine.includes("underline");
     
     const fontSize = computedStyle.fontSize;
     if (fontSize.endsWith('px')) {
-      styles.size = parseInt(fontSize, 10).toString();
-    } else {
-      styles.size = fontSize;
+      styles.size = parseInt(fontSize, 10);
     }
     
     styles.color = computedStyle.color;
   }
+
   return styles;
-};
-
-/**
- * Applies a style to the current selection by wrapping it in a <span>.
- * This is the core function for text formatting.
- */
-const applyStyleToSelection = (style: string, value?: string) => {
-  const selection = window.getSelection();
-  if (!selection || selection.rangeCount === 0) return;
-
-  const range = selection.getRangeAt(0);
-  if (range.collapsed) return; // Don't apply to empty selection
-
-  document.execCommand("styleWithCSS", false, 'true');
-
-  switch (style) {
-    case "bold":
-      document.execCommand("bold");
-      break;
-    case "italic":
-      document.execCommand("italic");
-      break;
-    case "underline":
-      document.execCommand("underline");
-      break;
-    case "size":
-        // This is a hacky part of execCommand. '7' corresponds to the largest size.
-        // A more robust solution would be to wrap in a span manually.
-        // For now, let's use a span wrapper for size.
-        const sizeSpan = document.createElement('span');
-        if (value) sizeSpan.style.fontSize = `${value}px`;
-        try {
-            range.surroundContents(sizeSpan);
-        } catch (e) {
-             console.warn("Could not wrap selection, applying via execCommand fallback (this may be less reliable).", e);
-        }
-      break;
-    case "color":
-      if (value) document.execCommand("foreColor", false, value);
-      break;
-  }
-  document.execCommand("styleWithCSS", false, 'false');
 };
 
 // --- React Component ---
@@ -99,58 +51,87 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({
   const {
     updateComponentProps,
     selectedComponentId,
-    setApplyStyle,
-    setGetActiveStyles,
+    registerTextActionHandlers,
   } = useEditorState();
   const editorRef = useRef<HTMLDivElement>(null);
   const isSelected = selectedComponentId === id;
 
-  const [activeStyles, setActiveStyles] = useState({});
+  const applyStyle: ApplyStyleFunc = useCallback((style, value) => {
+    if (!editorRef.current) return;
+    document.execCommand("styleWithCSS", false, 'true');
 
-  // This function will be passed up to the global state
-  const handleApplyStyle = useCallback((style: string, value?: any) => {
-    if (style === "align") {
-      updateComponentProps(id, { align: value });
-    } else {
-      applyStyleToSelection(style, value);
-      // After applying, immediately update the component's HTML in the global state
-      if (editorRef.current) {
-        updateComponentProps(id, { html: editorRef.current.innerHTML });
-      }
+    if (style === 'align') {
+        updateComponentProps(id, { align: value });
+        return;
     }
+    
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
+
+    const range = selection.getRangeAt(0);
+
+    // Create a new span to wrap the selection
+    const span = document.createElement('span');
+
+    switch (style) {
+      case 'bold':
+        span.style.fontWeight = 'bold';
+        break;
+      case 'italic':
+        span.style.fontStyle = 'italic';
+        break;
+      case 'underline':
+        span.style.textDecoration = 'underline';
+        break;
+      case 'size':
+        if (value) span.style.fontSize = `${value}px`;
+        break;
+      case 'color':
+        if (value) span.style.color = value;
+        break;
+      default:
+        document.execCommand("styleWithCSS", false, 'false');
+        return;
+    }
+    
+    // This is a simplified approach. A real implementation would need to handle
+    // splitting nodes and merging styles. For now, we wrap.
+    try {
+        range.surroundContents(span);
+    } catch(e) {
+        // Fallback for cases where selection spans across multiple block elements
+        // which can't be wrapped by a single span.
+        if (style === 'bold') document.execCommand('bold');
+        if (style === 'italic') document.execCommand('italic');
+        if (style === 'underline') document.execCommand('underline');
+        if (style === 'foreColor' && value) document.execCommand('foreColor', false, value);
+    }
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+    
+    // Update the component's HTML
+    updateComponentProps(id, { html: editorRef.current.innerHTML });
+    document.execCommand("styleWithCSS", false, 'false');
   }, [id, updateComponentProps]);
 
-  const handleGetActiveStyles = useCallback(() => {
+  const getActiveStyles: GetActiveStylesFunc = useCallback(() => {
     if (!editorRef.current) return {};
     const styles = getSelectionStyles(editorRef.current);
     return { ...styles, align };
   }, [align]);
 
-  // Register the functions with the global state when this component is selected
+
+  // Register/unregister the functions with the global state when this component is selected/deselected
   useEffect(() => {
     if (isSelected) {
-      setApplyStyle?.(() => handleApplyStyle);
-      setGetActiveStyles?.(() => handleGetActiveStyles);
+      registerTextActionHandlers({ applyStyle, getActiveStyles });
       
-      const editor = editorRef.current;
-      const updateToolbar = () => setActiveStyles(handleGetActiveStyles());
-
-      document.addEventListener("selectionchange", updateToolbar);
-      editor?.addEventListener("keyup", updateToolbar);
-      editor?.addEventListener("click", updateToolbar);
-      
-      // Initial update
-      updateToolbar();
-
       return () => {
-        document.removeEventListener("selectionchange", updateToolbar);
-        editor?.removeEventListener("keyup", updateToolbar);
-        editor?.removeEventListener("click", updateToolbar);
-        setApplyStyle?.(undefined);
-        setGetActiveStyles?.(undefined);
+        registerTextActionHandlers(null);
       };
     }
-  }, [isSelected, align, handleApplyStyle, handleGetActiveStyles, setApplyStyle, setGetActiveStyles]);
+  }, [isSelected, registerTextActionHandlers, applyStyle, getActiveStyles]);
 
   // Update DOM if HTML prop changes from outside (e.g., undo/redo)
   useEffect(() => {
@@ -162,8 +143,8 @@ export const RichText: React.FC<RichTextProps & { id: string }> = ({
   const handleInput = () => {
     if (editorRef.current) {
       const newHtml = editorRef.current.innerHTML;
-      // Note: We don't call updateComponentProps on every input to avoid cursor jumps
-      // It's handled on blur or via formatting buttons.
+      // We don't call updateComponentProps here on every input to avoid cursor jumps
+      // and performance issues. It's handled on blur or via explicit formatting actions.
     }
   };
   
