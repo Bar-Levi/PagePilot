@@ -46,11 +46,6 @@ export function PropsEditorPanel({ selectedComponent }: PropsEditorPanelProps) {
         // This is a simple deep merge, good enough for now
         const newProps = { ...selectedComponent.props, ...data };
 
-        // For richtext, we need to convert size from string to number
-        if(selectedComponent.type === 'RichText') {
-            newProps.content = newProps.content.map((node: any) => ({ ...node, size: Number(node.size) }));
-        }
-
         updateComponentProps(selectedComponent.id, newProps);
     };
 
@@ -64,56 +59,6 @@ export function PropsEditorPanel({ selectedComponent }: PropsEditorPanelProps) {
 
     const renderFormFields = () => {
         switch (selectedComponent.type) {
-            case "RichText":
-                const { fields } = useFieldArray({ control, name: "content" });
-                return (
-                    <div className="space-y-4">
-                        {fields.map((field, index) => (
-                           <div key={field.id} className="space-y-2 p-2 border rounded-md">
-                                <Label htmlFor={`content.${index}.text`}>תוכן</Label>
-                                <Input
-                                    {...register(`content.${index}.text`)}
-                                    defaultValue={(field as any).text}
-                                    onBlur={handleSubmit(handlePropsChange)}
-                                />
-                                <Label htmlFor={`content.${index}.size`}>גודל גופן</Label>
-                                <Input
-                                    type="number"
-                                    {...register(`content.${index}.size`)}
-                                    defaultValue={(field as any).size}
-                                    onBlur={handleSubmit(handlePropsChange)}
-                                />
-                           </div>
-                        ))}
-                        <div>
-                            <Label htmlFor="align">יישור</Label>
-                            <Controller
-                                name="align"
-                                control={control}
-                                render={({ field: { onChange, value } }) => (
-                                    <Select
-                                        value={value}
-                                        onValueChange={(newValue) => {
-                                            onChange(newValue);
-                                            // Directly call handle submit to trigger update on change
-                                            handleSubmit(handlePropsChange)();
-                                        }}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="בחר יישור" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="left">שמאל</SelectItem>
-                                            <SelectItem value="center">מרכז</SelectItem>
-                                            <SelectItem value="right">ימין</SelectItem>
-                                            <SelectItem value="justify">יישור לשני הצדדים</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                )}
-                            />
-                        </div>
-                    </div>
-                );
             case "Image":
                  return (
                     <div className="space-y-2">

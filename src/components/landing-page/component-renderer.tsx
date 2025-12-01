@@ -49,7 +49,6 @@ const RenderComponent = ({ component, selectedComponentId, onSelectComponent }: 
   const isSelected = selectedComponentId === component.id;
 
   const renderedComponent = (
-    // For containers, we need to recursively render children
     (component.type === "Container" && component.children) ? (
       <Component {...component.props} id={component.id}>
         {component.children.map((child) => (
@@ -62,8 +61,7 @@ const RenderComponent = ({ component, selectedComponentId, onSelectComponent }: 
         ))}
       </Component>
     ) : (
-      // For atomic components without children
-      <Component {...component.props} />
+      <Component {...component.props} id={component.id} />
     )
   );
 
