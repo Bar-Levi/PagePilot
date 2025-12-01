@@ -8,7 +8,6 @@ import { Skeleton } from "../ui/skeleton";
 type CanvasProps = {
   pageData: PageData | null;
   isLoading: boolean;
-  onUpdate: (data: PageData) => void;
   selectedComponentId: string | null;
   onSelectComponent: (id: string | null) => void;
 };
@@ -45,7 +44,6 @@ function LoadingSkeleton() {
 export function Canvas({
   pageData,
   isLoading,
-  onUpdate,
   selectedComponentId,
   onSelectComponent,
 }: CanvasProps) {
@@ -58,7 +56,6 @@ export function Canvas({
         ) : pageData?.pageStructure ? (
           <ComponentRenderer 
             pageData={pageData} 
-            onUpdate={onUpdate}
             selectedComponentId={selectedComponentId}
             onSelectComponent={onSelectComponent}
            />

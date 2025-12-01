@@ -81,12 +81,11 @@ const RenderComponent = ({ component, selectedComponentId, onSelectComponent }: 
 
 type ComponentRendererProps = {
   pageData: PageData | null;
-  onUpdate: (pageData: PageData) => void;
   selectedComponentId: string | null;
   onSelectComponent: (id: string | null) => void;
 };
 
-export function ComponentRenderer({ pageData, onUpdate, selectedComponentId, onSelectComponent }: ComponentRendererProps) {
+export function ComponentRenderer({ pageData, selectedComponentId, onSelectComponent }: ComponentRendererProps) {
   if (!pageData || !pageData.pageStructure || !Array.isArray(pageData.pageStructure)) {
     return (
       <div className="py-20 text-center">

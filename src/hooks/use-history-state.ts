@@ -1,16 +1,49 @@
-import { useState, useCallback, useMemo } from 'react';
+
+import { useState, useCallback, useMemo, useContext } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
+import type { PageData, PageComponent } from '@/components/landing-page/types';
+import { EditorStateContext } from './use-editor-state';
 
-export function useHistoryState<T>(initialState: T) {
-  const [history, setHistory] = useState<T[]>([initialState]);
-  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const state = useMemo(() => history[currentIndex], [history, currentIndex]);
+export function useHistoryState() {
+  const context = useContext(EditorStateContext);
+  if (!context) {
+    throw new Error('useHistoryState must be used within an EditorStateProvider');
+  }
 
-  const setState = useCallback((newState: T | ((prevState: T) => T)) => {
-    const resolvedState = typeof newState === 'function' ? (newState as (prevState: T) => T)(state) : newState;
+  const { history, setHistory, currentIndex, setCurrentIndex } = context;
+
+  const pageData = useMemo(() => history[currentIndex], [history, currentIndex]);
+  const selectedComponentId = useMemo(() => context.selectedComponentId, [context.selectedComponentId]);
+  
+  const selectedComponent = useMemo(() => {
+    if (!pageData || !selectedComponentId) return null;
     
-    if (JSON.stringify(resolvedState) === JSON.stringify(state)) {
+    // Helper function to find a component by ID recursively
+    const findComponent = (components: PageComponent[]): PageComponent | null => {
+      for (const component of components) {
+        if (component.id === selectedComponentId) {
+          return component;
+        }
+        if (component.children) {
+          const foundInChildren = findComponent(component.children);
+          if (foundInChildren) {
+            return foundInChildren;
+          }
+        }
+      }
+      return null;
+    };
+    
+    return findComponent(pageData.pageStructure);
+  }, [pageData, selectedComponentId]);
+
+
+  const setPageData = useCallback((newState: PageData | ((prevState: PageData) => PageData)) => {
+    const resolvedState = typeof newState === 'function' ? (newState as (prevState: PageData) => PageData)(pageData) : newState;
+    
+    // Simple deep-ish compare
+    if (JSON.stringify(resolvedState) === JSON.stringify(pageData)) {
       return;
     }
 
@@ -18,19 +51,19 @@ export function useHistoryState<T>(initialState: T) {
     newHistory.push(resolvedState);
     setHistory(newHistory);
     setCurrentIndex(newHistory.length - 1);
-  }, [currentIndex, history, state]);
+  }, [currentIndex, history, pageData, setHistory, setCurrentIndex]);
 
   const undo = useCallback(() => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     }
-  }, [currentIndex]);
+  }, [currentIndex, setCurrentIndex]);
 
   const redo = useCallback(() => {
     if (currentIndex < history.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
-  }, [currentIndex, history.length]);
+  }, [currentIndex, history.length, setCurrentIndex]);
 
   const canUndo = useMemo(() => currentIndex > 0, [currentIndex]);
   const canRedo = useMemo(() => currentIndex < history.length - 1, [currentIndex, history.length]);
@@ -39,13 +72,15 @@ export function useHistoryState<T>(initialState: T) {
   useHotkeys('mod+y', redo, { preventDefault: true });
   useHotkeys('mod+shift+z', redo, { preventDefault: true });
 
-
   return {
-    state,
-    setState,
+    pageData,
+    setPageData,
+    selectedComponent,
+    selectComponent: context.setSelectedComponentId,
     undo,
     redo,
     canUndo,
     canRedo,
   };
 }
+

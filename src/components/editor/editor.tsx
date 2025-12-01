@@ -10,7 +10,8 @@ import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import { useHistoryState } from "@/hooks/use-history-state";
 import { v4 as uuidv4 } from 'uuid';
-import { useState } from "react";
+import { EditorStateProvider } from "@/hooks/use-editor-state";
+
 
 const defaultPageData: PageData = {
   pageStructure: [
@@ -98,15 +99,18 @@ const defaultPageData: PageData = {
 };
 
 export function Editor() {
-  const { state: pageData, setState: setPageData, undo, redo, canUndo, canRedo } = useHistoryState<PageData | null>(defaultPageData);
-  const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
-
-  const handleUpdate = (newStructure: PageData) => {
-    setPageData(newStructure);
-  };
-
-  const selectedComponent = pageData?.pageStructure.flatMap(c => [c, ...(c.children || [])]).find(c => c.id === selectedComponentId);
   
+  return (
+    <EditorStateProvider initialPageData={defaultPageData}>
+      <EditorInternal />
+    </EditorStateProvider>
+  )
+}
+
+
+function EditorInternal() {
+  const { pageData, selectedComponent, selectComponent, undo, redo, canUndo, canRedo } = useHistoryState();
+
   return (
     <TooltipProvider>
       <div className="flex h-screen w-screen bg-muted/40">
@@ -172,9 +176,8 @@ export function Editor() {
             <Canvas
               pageData={pageData}
               isLoading={false}
-              onUpdate={handleUpdate}
-              selectedComponentId={selectedComponentId}
-              onSelectComponent={setSelectedComponentId}
+              selectedComponentId={selectedComponent?.id ?? null}
+              onSelectComponent={selectComponent}
             />
           </div>
         </main>
