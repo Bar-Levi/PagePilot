@@ -91,7 +91,8 @@ export interface SectionMapping {
   layoutHint?: {
     variant?: string; // "centered", "two-column", "cards", etc.
     emphasis?: "high" | "medium" | "low";
-    backgroundStyle?: "solid" | "gradient" | "image" | "none";
+    backgroundStyle?: "solid" | "gradient" | "image" | "accent" | "none";
+    imagePosition?: "left" | "right"; // For image+text sections
   };
 }
 

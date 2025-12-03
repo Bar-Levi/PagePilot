@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateLandingPageFlow } from "@/ai/orchestrator";
 import { processAndIndexFiles } from "@/ai/rag";
 import type { BusinessInput } from "@/ai/types";
-import { generateLandingPageFlowV2 } from "@/ai/orchestrator-v2";
+import { generateLandingPageFlow } from "@/ai/orchestrator";
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Run the flow
-    const result = await generateLandingPageFlowV2(businessInput);
+    const result = await generateLandingPageFlow(businessInput);
 
     // Log the final result for debugging
     console.log("✅ Final result - Page has", result.page.children?.length || 0, "sections");

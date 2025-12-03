@@ -1,430 +1,770 @@
-structure: StructureOutput;
-copy: CopyOutput;
-design: DesignOutput;
+"use server";
+
+import type { PageComponent } from "@/components/landing-page/types";
+import type {
+    DeepAnalysisOutput,
+    StructuredSectionsOutput,
+    SectionMapping,
+    ColorPalette,
+    PageWithColors,
+} from "./types";
+import type { BusinessInput } from "./types";
+
+/**
+ * Generate a unique ID for components
+ */
+function generateId(): string {
+    return `${Date.now()} -${Math.random().toString(36).substring(2, 9)} `;
 }
 
-export function buildPageJson({
-  input,
-  strategy,
-  structure,
-  copy,
-  design,
-}: BuildPageJsonInput): PageComponent {
-  const sections: PageComponent[] = [];
+interface BuildPageJsonV2Input {
+    input: BusinessInput;
+    deepAnalysis: DeepAnalysisOutput;
+    structuredSections: StructuredSectionsOutput;
+    colorPalette: ColorPalette;
+}
 
-  console.log(
-    "🔨 Building page from structure:",
-    JSON.stringify(structure, null, 2)
-  );
-  console.log(
-    "📋 Available copy sections:",
-    Object.keys(copy.sectionsCopy || {})
-  );
-  console.log(
-    "🎨 Available design hints:",
-    Object.keys(design.layoutHints || {})
-  );
+/**
+ * Build the final PageComponent JSON with colors
+ */
+export async function buildPageJsonV2({
+    input,
+    deepAnalysis,
+    structuredSections,
+    colorPalette,
+}: BuildPageJsonV2Input): Promise<PageWithColors> {
+    // Sort sections by position
+    const sortedSections = [...structuredSections.sections].sort(
+        (a, b) => a.position - b.position
+    );
 
-  for (const section of structure.sections) {
-    const sectionCopy = copy.sectionsCopy?.[section.id] || {};
-    const layoutHint = design.layoutHints?.[section.id];
+    // Build page components
+    const pageComponents: PageComponent[] = [];
 
-    console.log(`📦 Building section ${section.id}:`, {
-      hasCopy: Object.keys(sectionCopy).length > 0,
-      copyKeys: Object.keys(sectionCopy),
-      hasLayoutHint: !!layoutHint,
-      sectionCopy: sectionCopy,
-    });
+    for (const section of sortedSections) {
+        const component = buildSectionComponentV2({
+            section,
+            colorPalette,
+            businessName: input.businessName,
+        });
 
-    // If no copy was generated, create a fallback with basic content
-    // Check if sectionCopy has any meaningful content (not just undefined/empty values)
-    const hasContent =
-      sectionCopy.heading ||
-      sectionCopy.subheading ||
-      sectionCopy.paragraph ||
-      (sectionCopy.bullets && sectionCopy.bullets.length > 0) ||
-      (sectionCopy.faqItems && sectionCopy.faqItems.length > 0) ||
-      (sectionCopy.testimonials && sectionCopy.testimonials.length > 0) ||
-      sectionCopy.ctaLabelPrimary ||
-      sectionCopy.ctaLabelSecondary;
-
-    // Create better fallback content based on section type and strategy
-    const finalSectionCopy = hasContent
-      ? sectionCopy
-      : (() => {
-        switch (section.type) {
-          case "hero":
-            return {
-              heading: `${strategy.refinedValueProp ||
-                `ברוכים הבאים ל-${input.businessName}`
-                }`,
-              subheading: strategy.primaryPromise || `הפתרון המושלם עבורך`,
-              paragraph: `אנו ב-${input.businessName} מתמחים ב-${input.businessType
-                }. ${strategy.keyBenefitsToHighlight[0] ||
-                "אנו כאן כדי לעזור לך להשיג את המטרות שלך."
-                }`,
-              ctaLabelPrimary: strategy.mainCTA || "התחל עכשיו",
-              ctaLabelSecondary: "למד עוד",
-            };
-          case "problem":
-            return {
-              heading: "האם אתה מזהה את הבעיות האלה?",
-              subheading: "אנחנו מבינים את האתגרים שלך",
-              paragraph:
-                strategy.keyPainsToHighlight.length > 0
-                  ? `צעירים רבים מתמודדים עם: ${strategy.keyPainsToHighlight
-                    .slice(0, 3)
-                    .join(
-                      ", "
-                    )}. זה יכול להיות מתסכל ומעכב אותך מלהשיג את המטרות שלך.`
-                  : `אנחנו מבינים את האתגרים שאתה מתמודד איתם.`,
-              bullets: strategy.keyPainsToHighlight.slice(0, 4),
-            };
-          case "solution":
-            return {
-              heading: "הפתרון שלך נמצא כאן",
-              subheading: strategy.primaryPromise || "אנחנו כאן כדי לעזור",
-              paragraph: `${input.businessName
-                } מציעה פתרון מקיף שיעזור לך להתגבר על האתגרים ולהשיג את המטרות שלך. ${strategy.keyBenefitsToHighlight[0] || ""
-                }`,
-              ctaLabelPrimary: "גלה איך",
-            };
-          case "benefits":
-            return {
-              heading: "למה לבחור בנו?",
-              subheading: "היתרונות שלנו",
-              bullets:
-                strategy.keyBenefitsToHighlight.length > 0
-                  ? strategy.keyBenefitsToHighlight
-                  : ["יתרון 1", "יתרון 2", "יתרון 3"],
-            };
-          case "socialProof":
-            return {
-              heading: "מה הלקוחות שלנו אומרים",
-              subheading: "הצטרף לאלפי לקוחות מרוצים",
-              testimonials: [
-                {
-                  name: "לקוח מרוצה",
-                  role: "משתמש בשירות",
-                  quote: `${input.businessName} שינתה את החיים שלי. עכשיו אני מרגיש ביטחון פיננסי כמו שלא הרגשתי קודם.`,
-                },
-              ],
-            };
-          case "offer":
-            return {
-              heading: input.specialOffer || "הצעה מיוחדת עבורך",
-              subheading: "אל תפספס את ההזדמנות",
-              paragraph:
-                input.specialOffer ||
-                `קבל גישה מיוחדת לשירותים שלנו. ${strategy.mainCTA}`,
-              ctaLabelPrimary: strategy.mainCTA || "התחל עכשיו",
-            };
-          case "faq":
-            return {
-              heading: "שאלות נפוצות",
-              subheading: "כל מה שרצית לדעת",
-              faqItems: [
-                {
-                  question: "איך זה עובד?",
-                  answer: `${input.businessName} מציעה שירות מקיף שיעזור לך להשיג את המטרות שלך. התהליך פשוט וברור.`,
-                },
-                {
-                  question: "כמה זה עולה?",
-                  answer:
-                    "אנחנו מציעים מחירים הוגנים ומותאמים אישית. צור קשר כדי לקבל הצעת מחיר מותאמת.",
-                },
-                {
-                  question: "כמה זמן זה לוקח?",
-                  answer:
-                    "התהליך תלוי בצרכים שלך, אבל אנחנו עובדים בצורה יעילה כדי להביא תוצאות מהר ככל האפשר.",
-                },
-              ],
-            };
-          case "cta":
-            return {
-              heading: "מוכן להתחיל?",
-              subheading: "הצטרף אלינו עוד היום",
-              paragraph: `אל תחכה עוד. ${strategy.primaryPromise || "התחל את המסע שלך עכשיו."
-                }`,
-              ctaLabelPrimary: strategy.mainCTA || "התחל עכשיו",
-              ctaLabelSecondary: "צור קשר",
-            };
-          default:
-            return {
-              heading: section.purpose || `סקשן ${section.type}`,
-              paragraph: `זהו סקשן ${section.type} עבור ${input.businessName}`,
-            };
+        if (component) {
+            pageComponents.push(component);
         }
-      })();
+    }
 
-    console.log(`✅ Final section copy for ${section.id}:`, finalSectionCopy);
-
-    const sectionComponent = buildSectionComponent({
-      const children: PageComponent[] = [];
-      const timestamp = Date.now();
-
-      console.log(
-        `🔧 Building section component for ${section.id} with copy:`,
-        sectionCopy
-      );
-
-      // Add image for certain sections (hero, benefits, socialProof)
-      const shouldAddImage =
-        section.type === "hero" ||
-        section.type === "benefits" ||
-        section.type === "socialProof";
-      if(shouldAddImage) {
-        // Use Unsplash with relevant keywords based on section type and business type
-        const imageKeywords =
-          section.type === "hero"
-            ? "business,professional,success,finance"
-            : section.type === "benefits"
-              ? "growth,achievement,success,finance"
-              : "team,people,community,finance";
-
-        // Use source.unsplash.com (now configured in next.config.ts)
-        const imageUrl = `https://source.unsplash.com/800x600/?${imageKeywords}`;
-
-        children.push({
-          id: `${section.id}-image-${timestamp}`,
-          type: "Image",
-          props: {
-            src: imageUrl,
-            alt: `${businessName} - ${section.type}`,
-            alignment: "center" as const,
-            width: section.type === "hero" ? "100%" : 600,
-            maxWidth: section.type === "hero" ? "100%" : 600,
-            rounded: "12px",
-          },
-        });
-      }
-
-  // Determine text color based on section type and background
-  const isDarkBackground =
-        section.type === "hero" && layoutHint?.showBackgroundAccent;
-      const isCTADark = section.type === "cta";
-      const textColor = isDarkBackground || isCTADark ? "#ffffff" : "#1e293b";
-      const subheadingColor =
-        isDarkBackground || isCTADark ? "rgba(255,255,255,0.9)" : "#64748b";
-
-      // Add heading
-      if(sectionCopy.heading) {
-        children.push({
-          id: `${section.id}-heading-${timestamp}`,
-          type: "RichText",
-          props: {
-            html: `<span style="font-size: ${layoutHint?.emphasisLevel === "high" || section.type === "hero"
-              ? "48"
-              : "36"
-              }px; font-weight: 700; color: ${textColor};">${sectionCopy.heading
-              }</span>`,
-            align: "center",
-          },
-        });
-  }
-
-  // Add subheading
-  if (sectionCopy.subheading) {
-    children.push({
-      id: `${section.id}-subheading-${timestamp}`,
-      type: "RichText",
-      props: {
-        html: `<span style="font-size: 20px; color: ${subheadingColor};">${sectionCopy.subheading}</span>`,
-        align: "center",
-      },
-    });
-  }
-
-  // Add paragraph
-  if (sectionCopy.paragraph) {
-    children.push({
-      id: `${section.id}-paragraph-${timestamp}`,
-      type: "RichText",
-      props: {
-        html: `<span style="font-size: 18px; line-height: 1.6; color: ${textColor};">${sectionCopy.paragraph}</span>`,
-        align: section.type === "hero" ? "center" : "right",
-      },
-    });
-  }
-
-  // Add bullets
-  if (sectionCopy.bullets && sectionCopy.bullets.length > 0) {
-    const bulletsContainer: PageComponent = {
-      id: `${section.id}-bullets-${timestamp}`,
-      type: "Container",
-      props: {
-        style: {
-          flexDirection: "column",
-          gap: 12,
-          alignItems: "flex-start",
-        },
-      },
-      children: sectionCopy.bullets.map((bullet, index) => ({
-        id: `${section.id}-bullet-${index}-${timestamp}`,
-        type: "RichText",
+    // Create the final page structure
+    const page: PageComponent = {
+        id: generateId(),
+        type: "Page",
         props: {
-          html: `<span style="font-size: 16px;">• ${bullet}</span>`,
-          align: "right",
+            title: input.businessName,
+            description: deepAnalysis.marketingStrategy.valueProposition,
+            colorScheme: {
+                primary: colorPalette.primary.main,
+                secondary: colorPalette.secondary.main,
+                accent: colorPalette.accent.main,
+                background: colorPalette.background.default,
+                text: colorPalette.text.primary,
+            },
         },
-      })),
+        children: pageComponents,
     };
-    children.push(bulletsContainer);
-  }
 
-  // Add CTA buttons
-  if (sectionCopy.ctaLabelPrimary) {
-    children.push({
-      id: `${section.id}-cta-primary-${timestamp}`,
-      type: "Button",
-      props: {
-        text: sectionCopy.ctaLabelPrimary,
-        href: "#",
-        variant: "default",
-        size: "lg",
-      },
-    });
-  }
-
-  if (sectionCopy.ctaLabelSecondary) {
-    children.push({
-      id: `${section.id}-cta-secondary-${timestamp}`,
-      type: "Button",
-      props: {
-        text: sectionCopy.ctaLabelSecondary,
-        href: "#",
-        variant: "outline",
-        size: "lg",
-      },
-    });
-  }
-
-  // Add FAQ component (if section type is FAQ)
-  if (section.type === "faq") {
-    // Use the FAQ component instead of building containers
-    return {
-      id: section.id,
-      type: "FAQ",
-      props: {
-        headline: sectionCopy.heading || "שאלות נפוצות",
-        questions: sectionCopy.faqItems || [],
-      },
+    // Create analytics recommendations
+    const analytics = {
+        recommendedEvents: [
+            {
+                name: "page_view",
+                description: "Track landing page views",
+                trigger: "On page load",
+            },
+            {
+                name: "cta_click",
+                description: "Track CTA button clicks",
+                trigger: "When user clicks any CTA button",
+            },
+            {
+                name: "form_start",
+                description: "Track when user starts filling a form",
+                trigger: "On first form field interaction",
+            },
+            {
+                name: "form_submit",
+                description: "Track form submissions",
+                trigger: "On successful form submission",
+            },
+            {
+                name: "scroll_depth",
+                description: "Track how far users scroll",
+                trigger: "At 25%, 50%, 75%, 100% scroll depth",
+            },
+        ],
+        notesForUser: `מומלץ להגדיר מעקב אחר האירועים הבאים כדי למדוד את ביצועי דף הנחיתה ולבצע אופטימיזציה מתמשכת.שימו לב במיוחד למעקב אחר ${input.mainGoal === "leads" ? "שליחת טפסים" : input.mainGoal === "sales" ? "רכישות" : input.mainGoal === "booking" ? "הזמנות" : "הרשמות לניוזלטר"}.`,
     };
-  }
-
-  // Add ImageText component (if sectionCopy has imageText)
-  if (sectionCopy.imageText) {
-    const imageText = sectionCopy.imageText;
-    // Use Unsplash for image if not provided
-    const imageSrc = imageText.imageSrc || `https://source.unsplash.com/800x600/?business,professional,${input.businessType}`;
 
     return {
-      id: section.id,
-      type: "ImageText",
-      props: {
-        imageSrc: imageSrc,
-        imageAlt: imageText.imageAlt || `${businessName} - ${section.type}`,
-        text: imageText.text || sectionCopy.paragraph || "",
-        imagePosition: imageText.imagePosition || "right",
-        imageWidth: 50,
-        gap: 32,
-        alignment: "center",
-        backgroundColor: layoutHint?.showBackgroundAccent ? "#f8fafc" : undefined,
-        padding: "48px 32px",
-      },
+        page,
+        colorPalette,
+        analytics,
     };
-  }
+}
 
-  // Add testimonials
-  if (sectionCopy.testimonials && sectionCopy.testimonials.length > 0) {
-    sectionCopy.testimonials.forEach((testimonial, index) => {
-      children.push({
-        id: `${section.id}-testimonial-${index}-${timestamp}`,
-        type: "Container",
+/**
+ * Build a single section component with colors
+ */
+function buildSectionComponentV2({
+    section,
+    colorPalette,
+    businessName,
+}: {
+    section: SectionMapping;
+    colorPalette: ColorPalette;
+    businessName: string;
+}): PageComponent | null {
+    const { type, componentType, content, layoutHint } = section;
+
+    // Determine background color based on layout hint
+    let backgroundColor = colorPalette.background.default;
+    if (layoutHint?.backgroundStyle === "accent") {
+        backgroundColor = colorPalette.background.accent;
+    } else if (layoutHint?.backgroundStyle === "gradient") {
+        backgroundColor = `linear - gradient(135deg, ${colorPalette.primary.light} 0 %, ${colorPalette.secondary.light} 100 %)`;
+    }
+
+    // Build component based on type
+    switch (type) {
+        case "hero":
+            return buildHeroSection(section, colorPalette);
+
+        case "problem":
+        case "solution":
+            return buildTextImageSection(section, colorPalette);
+
+        case "benefits":
+        case "features":
+            return buildBenefitsSection(section, colorPalette);
+
+        case "howItWorks":
+            return buildHowItWorksSection(section, colorPalette);
+
+        case "socialProof":
+        case "testimonials":
+            return buildTestimonialsSection(section, colorPalette);
+
+        case "stats":
+            return buildStatsSection(section, colorPalette);
+
+        case "faq":
+            return buildFAQSection(section, colorPalette);
+
+        case "cta":
+            return buildCTASection(section, colorPalette);
+
+        case "offer":
+        case "pricing":
+            return buildOfferSection(section, colorPalette);
+
+        default:
+            return buildGenericSection(section, colorPalette);
+    }
+}
+
+// ============================================================================
+// Section Builders
+// ============================================================================
+
+function buildHeroSection(
+    section: SectionMapping,
+    colorPalette: ColorPalette
+): PageComponent {
+    return {
+        id: generateId(),
+        type: "Section",
         props: {
-          style: {
-            padding: "24px",
-            background: "#f8fafc",
-            borderRadius: "12px",
-            maxWidth: "500px",
-            flexDirection: "column",
-            gap: 12,
-          },
+            id: section.id,
+            className: "hero-section",
+            style: {
+                backgroundColor: colorPalette.background.default,
+                minHeight: "600px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+            },
         },
         children: [
-          {
-            id: `${section.id}-testimonial-quote-${index}-${timestamp}`,
-            type: "RichText",
-            props: {
-              html: `<span style="font-size: 16px; font-style: italic;">"${testimonial.quote}"</span>`,
-              align: "center",
+            {
+                id: generateId(),
+                type: "Container",
+                props: {
+                    maxWidth: "1200px",
+                    textAlign: "center",
+                },
+                children: [
+                    {
+                        id: generateId(),
+                        type: "Heading",
+                        props: {
+                            level: 1,
+                            text: section.content.heading || "",
+                            style: {
+                                color: colorPalette.text.primary,
+                                fontSize: "3.5rem",
+                                fontWeight: "bold",
+                                marginBottom: "1.5rem",
+                            },
+                        },
+                    },
+                    {
+                        id: generateId(),
+                        type: "Text",
+                        props: {
+                            text: section.content.subheading || "",
+                            style: {
+                                color: colorPalette.text.secondary,
+                                fontSize: "1.5rem",
+                                marginBottom: "2rem",
+                            },
+                        },
+                    },
+                    {
+                        id: generateId(),
+                        type: "Button",
+                        props: {
+                            text: section.content.ctaText || "התחל עכשיו",
+                            variant: "primary",
+                            size: "large",
+                            style: {
+                                backgroundColor: colorPalette.accent.main,
+                                color: colorPalette.accent.contrast,
+                                padding: "1rem 2.5rem",
+                                fontSize: "1.25rem",
+                                borderRadius: "8px",
+                                border: "none",
+                                cursor: "pointer",
+                            },
+                        },
+                    },
+                ],
             },
-          },
-          {
-            id: `${section.id}-testimonial-author-${index}-${timestamp}`,
-            type: "RichText",
-            props: {
-              html: `<span style="font-size: 14px; color: #64748b;">— ${testimonial.name}, ${testimonial.role}</span>`,
-              align: "center",
-            },
-          },
         ],
-      });
-    });
-  }
+    };
+}
 
-  // Build container with appropriate styling
-  const containerStyle: any = {
-    padding:
-      layoutHint?.emphasisLevel === "high"
-        ? "96px 32px"
-        : section.type === "hero"
-          ? "80px 32px"
-          : "64px 32px",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 24,
-    width: "100%",
-  };
+function buildTextImageSection(
+    section: SectionMapping,
+    colorPalette: ColorPalette
+): PageComponent {
+    return {
+        id: generateId(),
+        type: "Section",
+        props: {
+            id: section.id,
+            className: "text-image-section",
+            style: {
+                backgroundColor: colorPalette.background.paper,
+                padding: "4rem 2rem",
+            },
+        },
+        children: [
+            {
+                id: generateId(),
+                type: "Container",
+                props: {
+                    maxWidth: "1200px",
+                },
+                children: [
+                    {
+                        id: generateId(),
+                        type: "Heading",
+                        props: {
+                            level: 2,
+                            text: section.content.heading || "",
+                            style: {
+                                color: colorPalette.text.primary,
+                                fontSize: "2.5rem",
+                                marginBottom: "1.5rem",
+                            },
+                        },
+                    },
+                    {
+                        id: generateId(),
+                        type: "Text",
+                        props: {
+                            text: section.content.body || "",
+                            style: {
+                                color: colorPalette.text.secondary,
+                                fontSize: "1.125rem",
+                                lineHeight: "1.8",
+                            },
+                        },
+                    },
+                ],
+            },
+        ],
+    };
+}
 
-  // Set background based on section type
-  if (section.type === "hero") {
-    containerStyle.background = layoutHint?.showBackgroundAccent
-      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-      : "linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%)";
-    // Make text white if gradient background
-    if (layoutHint?.showBackgroundAccent) {
-      // Text color will be handled by RichText components
-    }
-  } else if (section.type === "problem" || section.type === "solution") {
-    containerStyle.background = "#f8fafc";
-  } else if (section.type === "benefits") {
-    containerStyle.background = "#ffffff";
-  } else if (section.type === "socialProof") {
-    containerStyle.background = "#f8fafc";
-  } else if (section.type === "offer") {
-    containerStyle.background =
-      "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)";
-  } else if (section.type === "cta") {
-    containerStyle.background = layoutHint?.showBackgroundAccent
-      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-      : "#1e293b";
-  } else {
-    containerStyle.background = layoutHint?.showBackgroundAccent
-      ? "#f8fafc"
-      : "#ffffff";
-  }
+function buildBenefitsSection(
+    section: SectionMapping,
+    colorPalette: ColorPalette
+): PageComponent {
+    const bullets = section.content.bullets || [];
 
-  console.log(
-    `✅ Built section ${section.id} with ${children.length} children`
-  );
+    return {
+        id: generateId(),
+        type: "Section",
+        props: {
+            id: section.id,
+            className: "benefits-section",
+            style: {
+                backgroundColor: colorPalette.background.default,
+                padding: "4rem 2rem",
+            },
+        },
+        children: [
+            {
+                id: generateId(),
+                type: "Container",
+                props: {
+                    maxWidth: "1200px",
+                },
+                children: [
+                    {
+                        id: generateId(),
+                        type: "Heading",
+                        props: {
+                            level: 2,
+                            text: section.content.heading || "",
+                            style: {
+                                color: colorPalette.text.primary,
+                                fontSize: "2.5rem",
+                                marginBottom: "2rem",
+                                textAlign: "center",
+                            },
+                        },
+                    },
+                    {
+                        id: generateId(),
+                        type: "Grid",
+                        props: {
+                            columns: 3,
+                            gap: "2rem",
+                        },
+                        children: bullets.map((bullet, index) => ({
+                            id: generateId(),
+                            type: "Card",
+                            props: {
+                                style: {
+                                    backgroundColor: colorPalette.background.paper,
+                                    padding: "2rem",
+                                    borderRadius: "12px",
+                                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                                },
+                            },
+                            children: [
+                                {
+                                    id: generateId(),
+                                    type: "Text",
+                                    props: {
+                                        text: bullet,
+                                        style: {
+                                            color: colorPalette.text.primary,
+                                            fontSize: "1.125rem",
+                                        },
+                                    },
+                                },
+                            ],
+                        })),
+                    },
+                ],
+            },
+        ],
+    };
+}
 
-  // Always return a container, even if empty (for debugging)
-  return {
-    id: section.id,
-    type: "Container",
-    props: {
-      style: containerStyle,
-    },
-    children,
-  };
+function buildHowItWorksSection(
+    section: SectionMapping,
+    colorPalette: ColorPalette
+): PageComponent {
+    const items = section.content.items || [];
+
+    return {
+        id: generateId(),
+        type: "Section",
+        props: {
+            id: section.id,
+            className: "how-it-works-section",
+            style: {
+                backgroundColor: colorPalette.background.paper,
+                padding: "4rem 2rem",
+            },
+        },
+        children: [
+            {
+                id: generateId(),
+                type: "Container",
+                props: {
+                    maxWidth: "1200px",
+                },
+                children: [
+                    {
+                        id: generateId(),
+                        type: "Heading",
+                        props: {
+                            level: 2,
+                            text: section.content.heading || "איך זה עובד?",
+                            style: {
+                                color: colorPalette.text.primary,
+                                fontSize: "2.5rem",
+                                marginBottom: "2rem",
+                                textAlign: "center",
+                            },
+                        },
+                    },
+                    {
+                        id: generateId(),
+                        type: "Steps",
+                        props: {
+                            items: items,
+                            accentColor: colorPalette.primary.main,
+                        },
+                    },
+                ],
+            },
+        ],
+    };
+}
+
+function buildTestimonialsSection(
+    section: SectionMapping,
+    colorPalette: ColorPalette
+): PageComponent {
+    const items = section.content.items || [];
+
+    return {
+        id: generateId(),
+        type: "Section",
+        props: {
+            id: section.id,
+            className: "testimonials-section",
+            style: {
+                backgroundColor: colorPalette.background.accent,
+                padding: "4rem 2rem",
+            },
+        },
+        children: [
+            {
+                id: generateId(),
+                type: "Container",
+                props: {
+                    maxWidth: "1200px",
+                },
+                children: [
+                    {
+                        id: generateId(),
+                        type: "Heading",
+                        props: {
+                            level: 2,
+                            text: section.content.heading || "מה אומרים עלינו",
+                            style: {
+                                color: colorPalette.text.primary,
+                                fontSize: "2.5rem",
+                                marginBottom: "2rem",
+                                textAlign: "center",
+                            },
+                        },
+                    },
+                    {
+                        id: generateId(),
+                        type: "TestimonialsGrid",
+                        props: {
+                            testimonials: items,
+                            accentColor: colorPalette.primary.main,
+                        },
+                    },
+                ],
+            },
+        ],
+    };
+}
+
+function buildStatsSection(
+    section: SectionMapping,
+    colorPalette: ColorPalette
+): PageComponent {
+    const items = section.content.items || [];
+
+    return {
+        id: generateId(),
+        type: "Section",
+        props: {
+            id: section.id,
+            className: "stats-section",
+            style: {
+                backgroundColor: colorPalette.primary.main,
+                padding: "3rem 2rem",
+            },
+        },
+        children: [
+            {
+                id: generateId(),
+                type: "Container",
+                props: {
+                    maxWidth: "1200px",
+                },
+                children: [
+                    {
+                        id: generateId(),
+                        type: "StatsGrid",
+                        props: {
+                            stats: items,
+                            textColor: colorPalette.primary.contrast,
+                        },
+                    },
+                ],
+            },
+        ],
+    };
+}
+
+function buildFAQSection(
+    section: SectionMapping,
+    colorPalette: ColorPalette
+): PageComponent {
+    const items = section.content.items || [];
+
+    return {
+        id: generateId(),
+        type: "Section",
+        props: {
+            id: section.id,
+            className: "faq-section",
+            style: {
+                backgroundColor: colorPalette.background.default,
+                padding: "4rem 2rem",
+            },
+        },
+        children: [
+            {
+                id: generateId(),
+                type: "Container",
+                props: {
+                    maxWidth: "900px",
+                },
+                children: [
+                    {
+                        id: generateId(),
+                        type: "Heading",
+                        props: {
+                            level: 2,
+                            text: section.content.heading || "שאלות נפוצות",
+                            style: {
+                                color: colorPalette.text.primary,
+                                fontSize: "2.5rem",
+                                marginBottom: "2rem",
+                                textAlign: "center",
+                            },
+                        },
+                    },
+                    {
+                        id: generateId(),
+                        type: "FAQAccordion",
+                        props: {
+                            items: items,
+                            accentColor: colorPalette.primary.main,
+                        },
+                    },
+                ],
+            },
+        ],
+    };
+}
+
+function buildCTASection(
+    section: SectionMapping,
+    colorPalette: ColorPalette
+): PageComponent {
+    return {
+        id: generateId(),
+        type: "Section",
+        props: {
+            id: section.id,
+            className: "cta-section",
+            style: {
+                backgroundColor: colorPalette.accent.main,
+                padding: "4rem 2rem",
+                textAlign: "center",
+            },
+        },
+        children: [
+            {
+                id: generateId(),
+                type: "Container",
+                props: {
+                    maxWidth: "800px",
+                },
+                children: [
+                    {
+                        id: generateId(),
+                        type: "Heading",
+                        props: {
+                            level: 2,
+                            text: section.content.heading || "",
+                            style: {
+                                color: colorPalette.accent.contrast,
+                                fontSize: "2.5rem",
+                                marginBottom: "1.5rem",
+                            },
+                        },
+                    },
+                    {
+                        id: generateId(),
+                        type: "Text",
+                        props: {
+                            text: section.content.subheading || "",
+                            style: {
+                                color: colorPalette.accent.contrast,
+                                fontSize: "1.25rem",
+                                marginBottom: "2rem",
+                            },
+                        },
+                    },
+                    {
+                        id: generateId(),
+                        type: "Button",
+                        props: {
+                            text: section.content.ctaText || "התחל עכשיו",
+                            variant: "secondary",
+                            size: "large",
+                            style: {
+                                backgroundColor: colorPalette.background.default,
+                                color: colorPalette.text.primary,
+                                padding: "1rem 2.5rem",
+                                fontSize: "1.25rem",
+                                borderRadius: "8px",
+                                border: "none",
+                                cursor: "pointer",
+                            },
+                        },
+                    },
+                ],
+            },
+        ],
+    };
+}
+
+function buildOfferSection(
+    section: SectionMapping,
+    colorPalette: ColorPalette
+): PageComponent {
+    return {
+        id: generateId(),
+        type: "Section",
+        props: {
+            id: section.id,
+            className: "offer-section",
+            style: {
+                backgroundColor: colorPalette.background.paper,
+                padding: "4rem 2rem",
+            },
+        },
+        children: [
+            {
+                id: generateId(),
+                type: "Container",
+                props: {
+                    maxWidth: "1000px",
+                },
+                children: [
+                    {
+                        id: generateId(),
+                        type: "Heading",
+                        props: {
+                            level: 2,
+                            text: section.content.heading || "",
+                            style: {
+                                color: colorPalette.text.primary,
+                                fontSize: "2.5rem",
+                                marginBottom: "1.5rem",
+                                textAlign: "center",
+                            },
+                        },
+                    },
+                    {
+                        id: generateId(),
+                        type: "Text",
+                        props: {
+                            text: section.content.body || "",
+                            style: {
+                                color: colorPalette.text.secondary,
+                                fontSize: "1.125rem",
+                                marginBottom: "2rem",
+                                textAlign: "center",
+                            },
+                        },
+                    },
+                    {
+                        id: generateId(),
+                        type: "Button",
+                        props: {
+                            text: section.content.ctaText || "קבל את ההצעה",
+                            variant: "primary",
+                            size: "large",
+                            style: {
+                                backgroundColor: colorPalette.accent.main,
+                                color: colorPalette.accent.contrast,
+                                padding: "1rem 2.5rem",
+                                fontSize: "1.25rem",
+                                borderRadius: "8px",
+                                border: "none",
+                                cursor: "pointer",
+                                display: "block",
+                                margin: "0 auto",
+                            },
+                        },
+                    },
+                ],
+            },
+        ],
+    };
+}
+
+function buildGenericSection(
+    section: SectionMapping,
+    colorPalette: ColorPalette
+): PageComponent {
+    return {
+        id: generateId(),
+        type: "Section",
+        props: {
+            id: section.id,
+            className: "generic-section",
+            style: {
+                backgroundColor: colorPalette.background.default,
+                padding: "4rem 2rem",
+            },
+        },
+        children: [
+            {
+                id: generateId(),
+                type: "Container",
+                props: {
+                    maxWidth: "1200px",
+                },
+                children: [
+                    {
+                        id: generateId(),
+                        type: "Text",
+                        props: {
+                            text: section.content.body || section.content.heading || "",
+                            style: {
+                                color: colorPalette.text.primary,
+                            },
+                        },
+                    },
+                ],
+            },
+        ],
+    };
 }
