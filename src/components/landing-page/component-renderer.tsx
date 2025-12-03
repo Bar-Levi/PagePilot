@@ -9,6 +9,7 @@ import type { PageComponent, PageData } from "./types";
 import { Container } from "./atomic/Container";
 import { TextContainer } from "./atomic/TextContainer";
 import { TextSpan } from "./atomic/TextSpan";
+import { RichText } from "./atomic/RichText";
 import { ImageComponent } from "./atomic/Image";
 import { ButtonComponent } from "./atomic/Button";
 import { EditableComponentWrapper } from "../editor/editable-component-wrapper";
@@ -18,6 +19,7 @@ const componentMap: { [key: string]: React.ComponentType<any> } = {
   Container: Container,
   TextContainer: TextContainer,
   TextSpan: TextSpan,
+  RichText: RichText,
   Image: ImageComponent,
   Button: ButtonComponent,
   Video: (props: any) => <div>Video Component (Not Implemented): {props.youtubeId}</div>,
@@ -30,12 +32,14 @@ const componentMap: { [key: string]: React.ComponentType<any> } = {
 
 type RenderComponentProps = {
   component: PageComponent;
-  selectedComponentId: string | null;
-  onSelectComponent: (id: string | null) => void;
+  selectedComponentIds: string[];
+  onSelectComponent: (id: string | null, multiSelect?: boolean) => void;
+  onUpdateComponent?: (id: string, props: any) => void;
+  onSelectRichText?: (id: string, type: string, element: HTMLDivElement) => void;
 };
 
 
-const RenderComponent = ({ component, selectedComponentId, onSelectComponent }: RenderComponentProps): React.ReactElement | null => {
+const RenderComponent = ({ component, selectedComponentIds, onSelectComponent, onUpdateComponent, onSelectRichText }: RenderComponentProps): React.ReactElement | null => {
   const Component = componentMap[component.type];
 
   if (!Component) {
@@ -49,24 +53,40 @@ const RenderComponent = ({ component, selectedComponentId, onSelectComponent }: 
     );
   }
 
-  const isSelected = selectedComponentId === component.id;
+  const isSelected = selectedComponentIds.includes(component.id);
 
   const renderedComponent = (
     (component.children && component.children.length > 0) ? (
       <Component {...component.props} id={component.id}>
         {component.children.map((child) => (
-          <RenderComponent 
-            key={child.id} 
-            component={child} 
-            selectedComponentId={selectedComponentId}
+          <RenderComponent
+            key={child.id}
+            component={child}
+            selectedComponentIds={selectedComponentIds}
             onSelectComponent={onSelectComponent}
+            onUpdateComponent={onUpdateComponent}
+            onSelectRichText={onSelectRichText}
             />
         ))}
       </Component>
+    ) : component.type === 'RichText' ? (
+      <Component
+        {...component.props}
+        id={component.id}
+        onChange={(html: string) => {
+          onUpdateComponent?.(component.id, { html });
+        }}
+        onSelect={onSelectRichText}
+      />
     ) : (
       <Component {...component.props} id={component.id} />
     )
   );
+
+  const handleRichTextChange = (html: string) => {
+    // This will be passed down to the RichText component
+    // The actual update will happen in the RichText component via props
+  };
 
   return (
     <EditableComponentWrapper
@@ -82,11 +102,13 @@ const RenderComponent = ({ component, selectedComponentId, onSelectComponent }: 
 
 type ComponentRendererProps = {
   pageData: PageData | null;
-  selectedComponentId: string | null;
-  onSelectComponent: (id: string | null) => void;
+  selectedComponentIds: string[];
+  onSelectComponent: (id: string | null, multiSelect?: boolean) => void;
+  onUpdateComponent?: (id: string, props: any) => void;
+  onSelectRichText?: (id: string, type: string, element: HTMLDivElement) => void;
 };
 
-export function ComponentRenderer({ pageData, selectedComponentId, onSelectComponent }: ComponentRendererProps) {
+export function ComponentRenderer({ pageData, selectedComponentIds, onSelectComponent, onUpdateComponent, onSelectRichText }: ComponentRendererProps) {
   if (!pageData || !pageData.pageStructure || !Array.isArray(pageData.pageStructure)) {
     return (
       <div className="py-20 text-center">
@@ -98,11 +120,12 @@ export function ComponentRenderer({ pageData, selectedComponentId, onSelectCompo
   return (
     <>
       {pageData.pageStructure.map((component) => (
-        <RenderComponent 
-          key={component.id} 
-          component={component} 
-          selectedComponentId={selectedComponentId}
+        <RenderComponent
+          key={component.id}
+          component={component}
+          selectedComponentIds={selectedComponentIds}
           onSelectComponent={onSelectComponent}
+          onUpdateComponent={onUpdateComponent}
         />
       ))}
     </>

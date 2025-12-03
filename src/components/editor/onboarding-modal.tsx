@@ -23,6 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Rocket } from "lucide-react";
+import { BusinessContextUpload } from "./business-context-upload";
 
 const formSchema = z.object({
   businessDescription: z.string().min(10, {
@@ -34,6 +35,7 @@ const formSchema = z.object({
   tone: z.string().min(3, {
     message: "אנא תאר את הטון הרצוי.",
   }),
+  businessContext: z.string().optional(),
 });
 
 type OnboardingModalProps = {
@@ -41,20 +43,30 @@ type OnboardingModalProps = {
   isGenerating: boolean;
 };
 
-export function OnboardingModal({ onGenerate, isGenerating }: OnboardingModalProps) {
+export function OnboardingModal({
+  onGenerate,
+  isGenerating,
+}: OnboardingModalProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       businessDescription: "",
       targetAudience: "",
       tone: "מקצועי",
+      businessContext: "",
     },
   });
 
   function handleAutoFill() {
-    form.setValue('businessDescription', 'חנות אונליין שמוכרת צעצועים אקולוגיים בעבודת יד לכלבים.');
-    form.setValue('targetAudience', 'בעלי כלבים באזורים עירוניים שאכפת להם מהסביבה.');
-    form.setValue('tone', 'שובב וידידותי');
+    form.setValue(
+      "businessDescription",
+      "חנות אונליין שמוכרת צעצועים אקולוגיים בעבודת יד לכלבים."
+    );
+    form.setValue(
+      "targetAudience",
+      "בעלי כלבים באזורים עירוניים שאכפת להם מהסביבה."
+    );
+    form.setValue("tone", "שובב וידידותי");
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -68,7 +80,8 @@ export function OnboardingModal({ onGenerate, isGenerating }: OnboardingModalPro
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <DialogHeader>
               <DialogTitle className="text-2xl font-headline flex items-center gap-2">
-                <Rocket className="w-6 h-6 text-primary" /> בואו נבנה את הדף שלכם
+                <Rocket className="w-6 h-6 text-primary" /> בואו נבנה את הדף
+                שלכם
               </DialogTitle>
               <DialogDescription>
                 ספרו לנו על העסק שלכם, וה-AI שלנו ייצור טיוטה ראשונית מרשימה.
@@ -123,9 +136,22 @@ export function OnboardingModal({ onGenerate, isGenerating }: OnboardingModalPro
               />
             </div>
 
+            {/* Business Context Section */}
+            <BusinessContextUpload
+              onContextChange={(context) =>
+                form.setValue("businessContext", context)
+              }
+              currentContext={form.watch("businessContext")}
+            />
+
             <DialogFooter className="flex-col-reverse sm:flex-col-reverse gap-2">
-               {process.env.NODE_ENV === 'development' && (
-                <Button type="button" variant="secondary" onClick={handleAutoFill} className="w-full">
+              {process.env.NODE_ENV === "development" && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleAutoFill}
+                  className="w-full"
+                >
                   מילוי אוטומטי (בדיקה)
                 </Button>
               )}

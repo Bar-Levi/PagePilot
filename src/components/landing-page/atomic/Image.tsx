@@ -5,7 +5,7 @@ import NextImage from 'next/image';
 import type { ImageProps } from '../types';
 import { cn } from '@/lib/utils';
 
-export const ImageComponent: React.FC<ImageProps> = ({
+export const ImageComponent: React.FC<ImageProps & { id?: string; onClick?: () => void; style?: any }> = ({
   src,
   alt,
   width = "100%",
@@ -13,6 +13,9 @@ export const ImageComponent: React.FC<ImageProps> = ({
   rounded,
   shadow,
   alignment = 'center',
+  id,
+  onClick,
+  style,
 }) => {
   const styles: React.CSSProperties = {
     width: typeof width === 'number' ? `${width}px` : width,
@@ -28,8 +31,14 @@ export const ImageComponent: React.FC<ImageProps> = ({
   }[alignment];
 
   return (
-    <div style={{ width: '100%' }} className={cn(alignmentClass)}>
-      <div style={styles} className="relative aspect-video">
+    <div
+      style={{ width: '100%' }}
+      className={cn(alignmentClass)}
+      data-component-id={id}
+      data-component-type="Image"
+      onClick={onClick}
+    >
+      <div style={{...styles, ...style}} className="relative aspect-video cursor-pointer">
         <NextImage
           src={src || "https://picsum.photos/seed/placeholder-img/600/400"}
           alt={alt || "Placeholder image"}

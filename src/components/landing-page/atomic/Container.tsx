@@ -4,10 +4,11 @@ import React from 'react';
 import type { ContainerProps } from '../types';
 import { cn } from '@/lib/utils';
 
-export const Container: React.FC<ContainerProps & { children: React.ReactNode; id: string }> = ({
+export const Container: React.FC<ContainerProps & { children: React.ReactNode; id: string; onClick?: () => void; style?: any }> = ({
   style = {},
   children,
   id,
+  onClick,
 }) => {
   const {
     background,
@@ -37,7 +38,13 @@ export const Container: React.FC<ContainerProps & { children: React.ReactNode; i
   };
 
   return (
-    <div style={styles} data-component-id={id} data-component-type="Container">
+    <div
+      style={styles}
+      data-component-id={id}
+      data-component-type="Container"
+      onClick={onClick}
+      className={onClick ? "cursor-pointer" : ""}
+    >
       {children}
     </div>
   );

@@ -1,12 +1,16 @@
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Rocket, Bot } from 'lucide-react';
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Rocket, Bot } from "lucide-react";
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen" dir="rtl">
       <header className="px-4 lg:px-6 h-16 flex items-center border-b">
-        <Link href="#" className="flex items-center justify-center" prefetch={false}>
+        <Link
+          href="#"
+          className="flex items-center justify-center"
+          prefetch={false}
+        >
           <Rocket className="h-6 w-6 text-primary" />
           <span className="sr-only">PagePilot</span>
         </Link>
@@ -30,7 +34,8 @@ export default function Home() {
                     בנה את דף הנחיתה המושלם שלך, ברגע
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    PagePilot משתמש ב-AI כדי ליצור, להתאים אישית ולהשיק דפי נחיתה מדהימים תוך דקות. בלי קוד, בלי מאמץ.
+                    PagePilot משתמש ב-AI כדי ליצור, להתאים אישית ולהשיק דפי
+                    נחיתה מדהימים תוך דקות. בלי קוד, בלי מאמץ.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
@@ -42,20 +47,22 @@ export default function Home() {
                   </Button>
                 </div>
               </div>
-               <div className="w-full aspect-square lg:aspect-auto overflow-hidden rounded-xl">
-                 <img
-                    src="https://picsum.photos/seed/rocket/600/600"
-                    alt="Hero"
-                    data-ai-hint="abstract rocket"
-                    className="object-cover w-full h-full"
-                  />
-               </div>
+              <div className="w-full aspect-square lg:aspect-auto overflow-hidden rounded-xl">
+                <img
+                  src="https://picsum.photos/seed/rocket/600/600"
+                  alt="Hero"
+                  data-ai-hint="abstract rocket"
+                  className="object-cover w-full h-full"
+                />
+              </div>
             </div>
           </div>
         </section>
       </main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-muted-foreground">&copy; 2024 PagePilot. כל הזכויות שמורות.</p>
+        <p className="text-xs text-muted-foreground">
+          &copy; 2024 PagePilot. כל הזכויות שמורות.
+        </p>
       </footer>
     </div>
   );

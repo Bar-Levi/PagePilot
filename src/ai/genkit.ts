@@ -1,7 +1,22 @@
-import {genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/google-genai';
+// Only initialize AI if API key is available
+const hasApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 
-export const ai = genkit({
-  plugins: [googleAI()],
-  model: 'googleai/gemini-2.5-flash',
-});
+// Lazy initialization of AI
+let aiInstance: any = null;
+
+export const getAI = async () => {
+  if (!hasApiKey) {
+    return null;
+  }
+
+  if (!aiInstance) {
+    const { genkit } = await import("genkit");
+    const { googleAI } = await import("@genkit-ai/google-genai");
+    aiInstance = genkit({
+      plugins: [googleAI()],
+      model: "googleai/gemini-2.5-flash",
+    });
+  }
+
+  return aiInstance;
+};
