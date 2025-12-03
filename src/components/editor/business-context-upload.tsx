@@ -46,15 +46,15 @@ export function BusinessContextUpload({
         onContextChange(updatedContext);
 
         toast({
-          title: "Files processed successfully",
-          description: `${newFiles.length} file(s) added to business context.`,
+          title: "קבצים עובדו בהצלחה",
+          description: `${newFiles.length} קובץ/ים נוספו להקשר העסקי.`,
         });
       } catch (error) {
         console.error("Error processing files:", error);
         toast({
           variant: "destructive",
-          title: "Error processing files",
-          description: "Some files could not be processed. Please try again.",
+          title: "שגיאה בעיבוד קבצים",
+          description: "חלק מהקבצים לא ניתן היה לעבד. נסה שוב.",
         });
       } finally {
         setIsProcessing(false);
@@ -79,14 +79,14 @@ export function BusinessContextUpload({
       } catch (error) {
         console.error("Error parsing PDF:", error);
         throw new Error(
-          "Failed to parse PDF file. Please try again or paste the content as text."
+          "לא ניתן לפרסר קובץ PDF. נסה שוב או הדבק את התוכן כטקסט."
         );
       }
     }
 
     if (fileType.includes("word") || fileType.includes("document")) {
       throw new Error(
-        "Word document processing not implemented yet. Please paste the content as text or convert to PDF."
+        "עיבוד קבצי Word עדיין לא מיושם. אנא הדבק את התוכן כטקסט או המר ל-PDF."
       );
     }
 
@@ -95,7 +95,7 @@ export function BusinessContextUpload({
       return await file.text();
     } catch {
       throw new Error(
-        `Unsupported file type: ${fileType}. Please use TXT or PDF files.`
+        `סוג קובץ לא נתמך: ${fileType}. אנא השתמש בקבצי TXT או PDF.`
       );
     }
   };
@@ -114,17 +114,17 @@ export function BusinessContextUpload({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileText className="w-5 h-5" />
-          Business Context & Documents
+          מסמכים והקשר עסקי
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4" dir="rtl">
         {/* Text Input */}
         <div>
           <label className="block text-sm font-medium mb-2">
-            Business Information (Text)
+            מידע טקסטואלי
           </label>
           <Textarea
-            placeholder="Paste or type information about your business, products, services, unique selling points, target audience details, etc. The AI will use this to create a highly personalized landing page."
+            placeholder="הדבק או הקלד מידע על העסק שלך, מוצרים, שירותים, נקודות מכירה ייחודיות, פרטים על קהל היעד וכו'. ה-AI ישתמש בזה כדי ליצור דף נחיתה מותאם אישית."
             value={textContext}
             onChange={(e) => handleTextChange(e.target.value)}
             rows={6}
@@ -135,7 +135,7 @@ export function BusinessContextUpload({
         {/* File Upload */}
         <div>
           <label className="block text-sm font-medium mb-2">
-            Upload Documents
+            העלאת מסמכים
           </label>
           <div className="flex items-center gap-2">
             <input
@@ -156,14 +156,14 @@ export function BusinessContextUpload({
                 asChild
               >
                 <span>
-                  <Upload className="w-4 h-4 mr-2" />
-                  {isProcessing ? "Processing..." : "Upload Files"}
+                  <Upload className="w-4 h-4 ml-2" />
+                  {isProcessing ? "מעבד..." : "העלה קבצים"}
                 </span>
               </Button>
             </label>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Supported: TXT and PDF files. Word documents support coming soon.
+            נתמך: קבצי TXT ו-PDF. תמיכה בקבצי Word בקרוב.
           </p>
         </div>
 
@@ -171,7 +171,7 @@ export function BusinessContextUpload({
         {uploadedFiles.length > 0 && (
           <div>
             <label className="block text-sm font-medium mb-2">
-              Uploaded Files
+              קבצים שהועלו
             </label>
             <div className="space-y-2">
               {uploadedFiles.map((file, index) => (
@@ -204,9 +204,8 @@ export function BusinessContextUpload({
         {textContext && (
           <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded">
             <p className="text-sm text-blue-800 dark:text-blue-200">
-              <strong>Context ready:</strong> {textContext.length} characters of
-              business information will be used to personalize your landing
-              page.
+              <strong>הקשר מוכן:</strong> {textContext.length.toLocaleString()} תווים של
+              מידע עסקי ישמשו להתאמה אישית של דף הנחיתה שלך.
             </p>
           </div>
         )}

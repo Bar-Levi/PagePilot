@@ -55,6 +55,7 @@ type ComponentDef = {
   icon: React.ReactNode;
   description?: string;
   popular?: boolean;
+  aiSupported?: boolean; // האם ה-AI תומך ברכיב הזה
 };
 
 // Category definition
@@ -79,6 +80,7 @@ const categories: Category[] = [
         icon: <Type className="w-5 h-5" />,
         description: "טקסט עשיר עם עיצוב",
         popular: true,
+        aiSupported: true,
       },
       {
         type: "Heading",
@@ -86,6 +88,7 @@ const categories: Category[] = [
         labelEn: "Heading",
         icon: <TextCursor className="w-5 h-5" />,
         description: "כותרת H1, H2, H3",
+        aiSupported: true,
       },
       {
         type: "Button",
@@ -94,6 +97,7 @@ const categories: Category[] = [
         icon: <MousePointer className="w-5 h-5" />,
         description: "כפתור קריאה לפעולה",
         popular: true,
+        aiSupported: true,
       },
       {
         type: "Link",
@@ -101,6 +105,7 @@ const categories: Category[] = [
         labelEn: "Link",
         icon: <Link2 className="w-5 h-5" />,
         description: "קישור טקסט",
+        aiSupported: false,
       },
       {
         type: "Divider",
@@ -108,6 +113,7 @@ const categories: Category[] = [
         labelEn: "Divider",
         icon: <Minus className="w-5 h-5" />,
         description: "קו הפרדה אופקי",
+        aiSupported: false,
       },
     ],
   },
@@ -123,6 +129,16 @@ const categories: Category[] = [
         icon: <Image className="w-5 h-5" />,
         description: "תמונה בודדת",
         popular: true,
+        aiSupported: true,
+      },
+      {
+        type: "ImageText",
+        label: "תמונה + טקסט",
+        labelEn: "Image + Text",
+        icon: <Columns className="w-5 h-5" />,
+        description: "תמונה וטקסט זה לצד זה",
+        popular: true,
+        aiSupported: true,
       },
       {
         type: "ImageGallery",
@@ -130,6 +146,7 @@ const categories: Category[] = [
         labelEn: "Image Gallery",
         icon: <Images className="w-5 h-5" />,
         description: "רשת תמונות עם lightbox",
+        aiSupported: false,
       },
       {
         type: "Video",
@@ -137,6 +154,7 @@ const categories: Category[] = [
         labelEn: "YouTube Video",
         icon: <Video className="w-5 h-5" />,
         description: "הטמעת וידאו מ-YouTube",
+        aiSupported: false,
       },
       {
         type: "VideoVimeo",
@@ -144,6 +162,7 @@ const categories: Category[] = [
         labelEn: "Vimeo Video",
         icon: <Play className="w-5 h-5" />,
         description: "הטמעת וידאו מ-Vimeo",
+        aiSupported: false,
       },
       {
         type: "Carousel",
@@ -152,6 +171,7 @@ const categories: Category[] = [
         icon: <Grid3X3 className="w-5 h-5" />,
         description: "סליידר תמונות",
         popular: true,
+        aiSupported: false,
       },
       {
         type: "VideoCarousel",
@@ -159,6 +179,7 @@ const categories: Category[] = [
         labelEn: "Video Carousel",
         icon: <Video className="w-5 h-5" />,
         description: "סליידר וידאו",
+        aiSupported: false,
       },
     ],
   },
@@ -174,6 +195,7 @@ const categories: Category[] = [
         icon: <Square className="w-5 h-5" />,
         description: "מיכל גמיש לרכיבים",
         popular: true,
+        aiSupported: true,
       },
       {
         type: "Row",
@@ -181,6 +203,7 @@ const categories: Category[] = [
         labelEn: "Row",
         icon: <Columns className="w-5 h-5" />,
         description: "פריסת עמודות",
+        aiSupported: false,
       },
       {
         type: "Card",
@@ -188,6 +211,7 @@ const categories: Category[] = [
         labelEn: "Card",
         icon: <CreditCardIcon className="w-5 h-5" />,
         description: "כרטיס עם תמונה וטקסט",
+        aiSupported: true,
       },
       {
         type: "Accordion",
@@ -195,6 +219,7 @@ const categories: Category[] = [
         labelEn: "Accordion",
         icon: <ListCollapse className="w-5 h-5" />,
         description: "רשימה מתקפלת",
+        aiSupported: true,
       },
       {
         type: "Tabs",
@@ -202,6 +227,7 @@ const categories: Category[] = [
         labelEn: "Tabs",
         icon: <LayoutList className="w-5 h-5" />,
         description: "תוכן בלשוניות",
+        aiSupported: false,
       },
       {
         type: "Spacer",
@@ -209,6 +235,7 @@ const categories: Category[] = [
         labelEn: "Spacer",
         icon: <Space className="w-5 h-5" />,
         description: "רווח אנכי",
+        aiSupported: false,
       },
     ],
   },
@@ -224,6 +251,7 @@ const categories: Category[] = [
         icon: <Layout className="w-5 h-5" />,
         description: "סקשן פתיחה מרשים",
         popular: true,
+        aiSupported: true,
       },
       {
         type: "Features",
@@ -232,6 +260,7 @@ const categories: Category[] = [
         icon: <Star className="w-5 h-5" />,
         description: "הצגת תכונות המוצר",
         popular: true,
+        aiSupported: true,
       },
       {
         type: "Testimonials",
@@ -239,6 +268,7 @@ const categories: Category[] = [
         labelEn: "Testimonials",
         icon: <MessageSquare className="w-5 h-5" />,
         description: "חוות דעת לקוחות",
+        aiSupported: true,
       },
       {
         type: "Pricing",
@@ -246,6 +276,7 @@ const categories: Category[] = [
         labelEn: "Pricing",
         icon: <CreditCard className="w-5 h-5" />,
         description: "טבלת מחירים",
+        aiSupported: false,
       },
       {
         type: "FAQ",
@@ -253,6 +284,7 @@ const categories: Category[] = [
         labelEn: "FAQ",
         icon: <HelpCircle className="w-5 h-5" />,
         description: "שאלות ותשובות",
+        aiSupported: true,
       },
       {
         type: "Team",
@@ -260,6 +292,7 @@ const categories: Category[] = [
         labelEn: "Team",
         icon: <Users className="w-5 h-5" />,
         description: "הצגת חברי הצוות",
+        aiSupported: false,
       },
       {
         type: "Logos",
@@ -267,6 +300,7 @@ const categories: Category[] = [
         labelEn: "Logos",
         icon: <Images className="w-5 h-5" />,
         description: "רצועת לוגואים של לקוחות",
+        aiSupported: false,
       },
       {
         type: "Stats",
@@ -274,6 +308,7 @@ const categories: Category[] = [
         labelEn: "Stats",
         icon: <BarChart3 className="w-5 h-5" />,
         description: "מספרים מרשימים",
+        aiSupported: true,
       },
       {
         type: "Contact",
@@ -281,6 +316,7 @@ const categories: Category[] = [
         labelEn: "Contact",
         icon: <Mail className="w-5 h-5" />,
         description: "טופס יצירת קשר",
+        aiSupported: false,
       },
       {
         type: "CTA",
@@ -288,6 +324,7 @@ const categories: Category[] = [
         labelEn: "CTA",
         icon: <Megaphone className="w-5 h-5" />,
         description: "סקשן סיום עם CTA",
+        aiSupported: true,
       },
     ],
   },
@@ -302,6 +339,7 @@ const categories: Category[] = [
         labelEn: "Text Input",
         icon: <TextCursor className="w-5 h-5" />,
         description: "שדה קלט טקסט",
+        aiSupported: false,
       },
       {
         type: "EmailInput",
@@ -309,6 +347,7 @@ const categories: Category[] = [
         labelEn: "Email Input",
         icon: <AtSign className="w-5 h-5" />,
         description: "שדה קלט אימייל",
+        aiSupported: false,
       },
       {
         type: "Textarea",
@@ -316,6 +355,7 @@ const categories: Category[] = [
         labelEn: "Textarea",
         icon: <AlignLeft className="w-5 h-5" />,
         description: "שדה טקסט רב-שורתי",
+        aiSupported: false,
       },
       {
         type: "Checkbox",
@@ -323,6 +363,7 @@ const categories: Category[] = [
         labelEn: "Checkbox",
         icon: <CheckSquare className="w-5 h-5" />,
         description: "תיבת סימון",
+        aiSupported: false,
       },
       {
         type: "Select",
@@ -330,6 +371,7 @@ const categories: Category[] = [
         labelEn: "Select",
         icon: <List className="w-5 h-5" />,
         description: "רשימה נפתחת",
+        aiSupported: false,
       },
       {
         type: "SubmitButton",
@@ -337,6 +379,7 @@ const categories: Category[] = [
         labelEn: "Submit Button",
         icon: <Send className="w-5 h-5" />,
         description: "כפתור שליחת טופס",
+        aiSupported: false,
       },
     ],
   },
@@ -351,6 +394,7 @@ const categories: Category[] = [
         labelEn: "Fade In",
         icon: <Sparkles className="w-5 h-5" />,
         description: "הופעה הדרגתית",
+        aiSupported: false,
       },
       {
         type: "SlideIn",
@@ -358,6 +402,7 @@ const categories: Category[] = [
         labelEn: "Slide In",
         icon: <Sparkles className="w-5 h-5" />,
         description: "החלקה לתוך המסך",
+        aiSupported: false,
       },
       {
         type: "ZoomIn",
@@ -365,6 +410,7 @@ const categories: Category[] = [
         labelEn: "Zoom In",
         icon: <Sparkles className="w-5 h-5" />,
         description: "התקרבות",
+        aiSupported: false,
       },
       {
         type: "Bounce",
@@ -372,6 +418,7 @@ const categories: Category[] = [
         labelEn: "Bounce",
         icon: <Sparkles className="w-5 h-5" />,
         description: "קפיצה",
+        aiSupported: false,
       },
       {
         type: "Parallax",
@@ -379,6 +426,7 @@ const categories: Category[] = [
         labelEn: "Parallax",
         icon: <Sparkles className="w-5 h-5" />,
         description: "אפקט פרלקס",
+        aiSupported: false,
       },
     ],
   },
@@ -537,31 +585,58 @@ function ComponentCard({
   component: ComponentDef;
   onDragStart: (e: React.DragEvent, type: string) => void;
 }) {
+  const isDisabled = component.aiSupported === false;
+
   return (
     <div
-      draggable
-      onDragStart={(e) => onDragStart(e, component.type)}
+      draggable={!isDisabled}
+      onDragStart={(e) => !isDisabled && onDragStart(e, component.type)}
       className={cn(
         "flex flex-col items-center justify-center gap-1.5 p-3",
         "bg-slate-50 dark:bg-slate-700/50 rounded-lg",
         "border border-slate-200 dark:border-slate-600",
-        "cursor-grab active:cursor-grabbing",
-        "hover:bg-slate-100 dark:hover:bg-slate-700",
-        "hover:border-blue-300 dark:hover:border-blue-500",
         "transition-all duration-150",
-        "select-none group relative"
+        "select-none group relative",
+        isDisabled
+          ? "opacity-40 cursor-not-allowed"
+          : "cursor-grab active:cursor-grabbing hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-blue-300 dark:hover:border-blue-500"
       )}
-      title={component.description}
+      title={
+        isDisabled
+          ? `${component.description} (לא נתמך על ידי AI)`
+          : component.description
+      }
     >
       {/* Popular badge */}
-      {component.popular && (
+      {component.popular && !isDisabled && (
         <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full" />
       )}
 
-      <div className="text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+      {/* AI Not Supported badge */}
+      {isDisabled && (
+        <div className="absolute -top-1 -left-1 text-[10px] bg-red-500 text-white px-1 rounded">
+          AI ✕
+        </div>
+      )}
+
+      <div
+        className={cn(
+          "transition-colors",
+          isDisabled
+            ? "text-slate-400 dark:text-slate-500"
+            : "text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400"
+        )}
+      >
         {component.icon}
       </div>
-      <span className="text-xs font-medium text-slate-600 dark:text-slate-300 text-center">
+      <span
+        className={cn(
+          "text-xs font-medium text-center",
+          isDisabled
+            ? "text-slate-400 dark:text-slate-500"
+            : "text-slate-600 dark:text-slate-300"
+        )}
+      >
         {component.label}
       </span>
     </div>

@@ -14,8 +14,9 @@ import { DevicePreviewToggle, DevicePreviewWrapper, type DeviceType } from "./de
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Layers, Grid3X3 } from "lucide-react";
 import type { PageComponent } from "@/components/landing-page/types";
+import { BusinessInputForm } from "./business-input-form";
 
-// Default page structure for demo
+// Default page structure for demo (no longer used - kept for reference)
 const defaultPageStructure: PageComponent = {
   id: "page-root",
   type: "Page",
@@ -234,6 +235,7 @@ const defaultPageStructure: PageComponent = {
 
 export function EditorLayout() {
   const setPageJson = useEditorStore((s) => s.setPageJson);
+  const pageJson = useEditorStore((s) => s.pageJson);
   const selectedId = useEditorStore((s) => s.selectedId);
   const getComponentById = useEditorStore((s) => s.getComponentById);
   const [leftTab, setLeftTab] = useState<"components" | "layers">("components");
@@ -242,14 +244,18 @@ export function EditorLayout() {
   // Enable keyboard shortcuts
   useKeyboardShortcuts();
 
-  // Initialize page on mount
-  useEffect(() => {
-    setPageJson(defaultPageStructure);
-  }, [setPageJson]);
+  // Check if page is empty
+  const isEmpty = !pageJson.children || pageJson.children.length === 0;
 
   const selectedComponent = selectedId ? getComponentById(selectedId) : null;
   const isRichTextSelected = selectedComponent?.type === "RichText";
 
+  // If page is empty, show the business input form
+  if (isEmpty) {
+    return <BusinessInputForm />;
+  }
+
+  // Otherwise, show the editor
   return (
     <div className="flex flex-col h-screen w-screen bg-slate-100 dark:bg-slate-900 overflow-hidden">
       {/* Top Toolbar */}

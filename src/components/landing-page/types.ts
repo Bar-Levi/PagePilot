@@ -30,6 +30,7 @@ export type ComponentType =
   | "Tabs"
   | "Heading"
   | "Link"
+  | "ImageText"
   // Section-level components (templates)
   | "Hero"
   | "Features"
@@ -40,7 +41,15 @@ export type ComponentType =
   | "Team"
   | "Logos"
   | "Stats"
-  | "Contact";
+  | "Contact"
+  // Additional components for v2 page builder
+  | "Section"
+  | "Text"
+  | "Grid"
+  | "Steps"
+  | "TestimonialsGrid"
+  | "StatsGrid"
+  | "FAQAccordion";
 
 // The unified structure for ANY component.
 export type PageComponent = {
@@ -85,6 +94,7 @@ export type AnyProps =
   | TabsProps
   | HeadingProps
   | LinkProps
+  | ImageTextProps
   // Section props
   | HeroProps
   | FeaturesProps
@@ -95,7 +105,15 @@ export type AnyProps =
   | TeamProps
   | LogosProps
   | StatsProps
-  | ContactProps;
+  | ContactProps
+  // V2 page builder component props
+  | SectionProps
+  | TextProps
+  | GridProps
+  | StepsProps
+  | TestimonialsGridProps
+  | StatsGridProps
+  | FAQAccordionProps;
 
 // 0. Page Props
 export type PageProps = {
@@ -389,6 +407,19 @@ export type LinkProps = {
   underline?: boolean;
 };
 
+// ImageText Props (תמונה + טקסט עם אפשרות להחלפת סדר)
+export type ImageTextProps = {
+  imageSrc: string;
+  imageAlt?: string;
+  text: string; // HTML string for RichText
+  imagePosition?: "left" | "right"; // מיקום התמונה (שמאל או ימין)
+  imageWidth?: string | number; // רוחב התמונה (אחוז או פיקסלים)
+  gap?: number; // רווח בין התמונה לטקסט
+  alignment?: "top" | "center" | "bottom"; // יישור אנכי
+  backgroundColor?: string;
+  padding?: string;
+};
+
 /**
  * =================================================================
  * ADDITIONAL SECTION PROPS
@@ -439,4 +470,62 @@ export type ContactProps = {
   phone?: string;
   address?: string;
   showForm?: boolean;
+};
+
+/**
+ * =================================================================
+ * V2 PAGE BUILDER COMPONENT PROPS
+ * =================================================================
+ * These are props for components used in the v2 page builder
+ */
+
+// Section Props - Generic section wrapper
+export type SectionProps = {
+  id?: string;
+  className?: string;
+  style?: Record<string, any>;
+  [key: string]: any; // Allow any additional props
+};
+
+// Text Props - Simple text component
+export type TextProps = {
+  text?: string;
+  style?: Record<string, any>;
+  [key: string]: any;
+};
+
+// Grid Props - Grid layout component
+export type GridProps = {
+  columns?: number;
+  gap?: string;
+  style?: Record<string, any>;
+  [key: string]: any;
+};
+
+// Steps Props - Step-by-step component
+export type StepsProps = {
+  items?: any[];
+  accentColor?: string;
+  [key: string]: any;
+};
+
+// TestimonialsGrid Props - Testimonials grid component
+export type TestimonialsGridProps = {
+  testimonials?: any[];
+  accentColor?: string;
+  [key: string]: any;
+};
+
+// StatsGrid Props - Stats grid component
+export type StatsGridProps = {
+  stats?: any[];
+  textColor?: string;
+  [key: string]: any;
+};
+
+// FAQAccordion Props - FAQ accordion component
+export type FAQAccordionProps = {
+  items?: any[];
+  accentColor?: string;
+  [key: string]: any;
 };

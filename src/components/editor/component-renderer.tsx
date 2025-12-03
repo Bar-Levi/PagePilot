@@ -8,6 +8,12 @@ import NextImage from "next/image";
 import NextLink from "next/link";
 import { Button as ShadcnButton } from "@/components/ui/button";
 import { cleanAllHTML } from "@/lib/richtext-helpers";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 // ============================================================================
 // Component Renderers
@@ -38,6 +44,12 @@ export function ComponentRenderer({ node, isEditing }: ComponentRendererProps) {
       return <TextSpanRenderer node={node} />;
     case "Divider":
       return <DividerRenderer node={node} />;
+    case "FAQ":
+      return <FAQRenderer node={node} isEditing={isEditing} />;
+    case "Accordion":
+      return <AccordionRenderer node={node} isEditing={isEditing} />;
+    case "ImageText":
+      return <ImageTextRenderer node={node} isEditing={isEditing} />;
     default:
       return <UnknownRenderer node={node} />;
   }
@@ -304,11 +316,15 @@ function ImageRenderer({
     );
   }
 
+  const alignment = (props.alignment || "center") as
+    | "left"
+    | "center"
+    | "right";
   const alignmentClass = {
     left: "mr-auto",
     center: "mx-auto",
     right: "ml-auto",
-  }[props.alignment || "center"];
+  }[alignment];
 
   const imageStyle: React.CSSProperties = {
     width: typeof props.width === "number" ? `${props.width}px` : props.width,
@@ -341,17 +357,22 @@ function ImageRenderer({
 function VideoRenderer({ node }: { node: PageComponent }) {
   const props = node.props as any;
 
+  const ratio = (props.ratio || "16:9") as "16:9" | "4:3" | "1:1";
   const ratioClass = {
     "16:9": "aspect-video",
     "4:3": "aspect-[4/3]",
     "1:1": "aspect-square",
-  }[props.ratio || "16:9"];
+  }[ratio];
 
+  const alignment = (props.alignment || "center") as
+    | "left"
+    | "center"
+    | "right";
   const alignmentClass = {
     left: "mr-auto",
     center: "mx-auto",
     right: "ml-auto",
-  }[props.alignment || "center"];
+  }[alignment];
 
   return (
     <div
@@ -360,7 +381,11 @@ function VideoRenderer({ node }: { node: PageComponent }) {
     >
       <div className={cn("relative", ratioClass)}>
         <iframe
-          src={`https://www.youtube.com/embed/${props.youtubeId || "dQw4w9WgXcQ"}?autoplay=${props.autoplay ? 1 : 0}&controls=${props.controls !== false ? 1 : 0}`}
+          src={`https://www.youtube.com/embed/${
+            props.youtubeId || "dQw4w9WgXcQ"
+          }?autoplay=${props.autoplay ? 1 : 0}&controls=${
+            props.controls !== false ? 1 : 0
+          }`}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           className="absolute inset-0 w-full h-full rounded"
@@ -437,6 +462,394 @@ function DividerRenderer({ node }: { node: PageComponent }) {
 }
 
 // ============================================================================
+// FAQ Renderer
+// ============================================================================
+
+function FAQRenderer({
+  node,
+  isEditing,
+}: {
+  node: PageComponent;
+  isEditing: boolean;
+}) {
+  const props = node.props as any;
+  const updateProps = useEditorStore((s) => s.updateProps);
+
+  if (isEditing) {
+    return (
+      <div className="space-y-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border">
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            כותרת (אופציונלי)
+          </label>
+          <input
+            type="text"
+            value={props.headline || ""}
+            onChange={(e) => updateProps(node.id, { headline: e.target.value })}
+            className="w-full px-3 py-2 border rounded-md text-sm"
+            placeholder="שאלות נפוצות..."
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            שאלות ותשובות
+          </label>
+          <div className="space-y-3">
+            {(props.questions || []).map((item: any, index: number) => (
+              <div key={index} className="p-3 border rounded-md space-y-2">
+                <input
+                  type="text"
+                  value={item.question || ""}
+                  onChange={(e) => {
+                    const newQuestions = [...(props.questions || [])];
+                    newQuestions[index] = { ...item, question: e.target.value };
+                    updateProps(node.id, { questions: newQuestions });
+                  }}
+                  className="w-full px-2 py-1 border rounded text-sm"
+                  placeholder="שאלה..."
+                />
+                <textarea
+                  value={item.answer || ""}
+                  onChange={(e) => {
+                    const newQuestions = [...(props.questions || [])];
+                    newQuestions[index] = { ...item, answer: e.target.value };
+                    updateProps(node.id, { questions: newQuestions });
+                  }}
+                  className="w-full px-2 py-1 border rounded text-sm"
+                  placeholder="תשובה..."
+                  rows={3}
+                />
+                <button
+                  onClick={() => {
+                    const newQuestions = (props.questions || []).filter(
+                      (_: any, i: number) => i !== index
+                    );
+                    updateProps(node.id, { questions: newQuestions });
+                  }}
+                  className="text-xs text-red-600 hover:text-red-800"
+                >
+                  מחק
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={() => {
+                const newQuestions = [
+                  ...(props.questions || []),
+                  { question: "", answer: "" },
+                ];
+                updateProps(node.id, { questions: newQuestions });
+              }}
+              className="text-sm text-primary hover:underline"
+            >
+              + הוסף שאלה
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full" data-component-id={node.id}>
+      {props.headline && (
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          {props.headline}
+        </h2>
+      )}
+      <Accordion type="single" collapsible className="w-full">
+        {(props.questions || []).map((item: any, index: number) => (
+          <AccordionItem key={index} value={`item-${index}`}>
+            <AccordionTrigger className="text-right">
+              {item.question}
+            </AccordionTrigger>
+            <AccordionContent className="text-right">
+              <div dangerouslySetInnerHTML={{ __html: item.answer || "" }} />
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+  );
+}
+
+// ============================================================================
+// Accordion Renderer (generic accordion component)
+// ============================================================================
+
+function AccordionRenderer({
+  node,
+  isEditing,
+}: {
+  node: PageComponent;
+  isEditing: boolean;
+}) {
+  const props = node.props as any;
+  const updateProps = useEditorStore((s) => s.updateProps);
+
+  if (isEditing) {
+    return (
+      <div className="space-y-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border">
+        <div>
+          <label className="block text-sm font-medium mb-2">פריטים</label>
+          <div className="space-y-3">
+            {(props.items || []).map((item: any, index: number) => (
+              <div key={index} className="p-3 border rounded-md space-y-2">
+                <input
+                  type="text"
+                  value={item.title || ""}
+                  onChange={(e) => {
+                    const newItems = [...(props.items || [])];
+                    newItems[index] = { ...item, title: e.target.value };
+                    updateProps(node.id, { items: newItems });
+                  }}
+                  className="w-full px-2 py-1 border rounded text-sm"
+                  placeholder="כותרת..."
+                />
+                <textarea
+                  value={item.content || ""}
+                  onChange={(e) => {
+                    const newItems = [...(props.items || [])];
+                    newItems[index] = { ...item, content: e.target.value };
+                    updateProps(node.id, { items: newItems });
+                  }}
+                  className="w-full px-2 py-1 border rounded text-sm"
+                  placeholder="תוכן..."
+                  rows={3}
+                />
+                <button
+                  onClick={() => {
+                    const newItems = (props.items || []).filter(
+                      (_: any, i: number) => i !== index
+                    );
+                    updateProps(node.id, { items: newItems });
+                  }}
+                  className="text-xs text-red-600 hover:text-red-800"
+                >
+                  מחק
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={() => {
+                const newItems = [
+                  ...(props.items || []),
+                  { title: "", content: "" },
+                ];
+                updateProps(node.id, { items: newItems });
+              }}
+              className="text-sm text-primary hover:underline"
+            >
+              + הוסף פריט
+            </button>
+          </div>
+        </div>
+        <div>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={props.allowMultiple || false}
+              onChange={(e) =>
+                updateProps(node.id, { allowMultiple: e.target.checked })
+              }
+            />
+            אפשר פתיחה של מספר פריטים בו-זמנית
+          </label>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full" data-component-id={node.id}>
+      <Accordion
+        type={props.allowMultiple ? "multiple" : "single"}
+        collapsible
+        className="w-full"
+      >
+        {(props.items || []).map((item: any, index: number) => (
+          <AccordionItem key={index} value={`item-${index}`}>
+            <AccordionTrigger className="text-right">
+              {item.title}
+            </AccordionTrigger>
+            <AccordionContent className="text-right">
+              <div dangerouslySetInnerHTML={{ __html: item.content || "" }} />
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+  );
+}
+
+// ============================================================================
+// ImageText Renderer (תמונה + טקסט עם אפשרות להחלפת סדר)
+// ============================================================================
+
+function ImageTextRenderer({
+  node,
+  isEditing,
+}: {
+  node: PageComponent;
+  isEditing: boolean;
+}) {
+  const props = node.props as any;
+  const updateProps = useEditorStore((s) => s.updateProps);
+
+  if (isEditing) {
+    return (
+      <div className="space-y-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border">
+        <div>
+          <label className="block text-sm font-medium mb-2">כתובת תמונה</label>
+          <input
+            type="url"
+            value={props.imageSrc || ""}
+            onChange={(e) => updateProps(node.id, { imageSrc: e.target.value })}
+            className="w-full px-3 py-2 border rounded-md text-sm"
+            placeholder="https://..."
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            טקסט חלופי לתמונה
+          </label>
+          <input
+            type="text"
+            value={props.imageAlt || ""}
+            onChange={(e) => updateProps(node.id, { imageAlt: e.target.value })}
+            className="w-full px-3 py-2 border rounded-md text-sm"
+            placeholder="תיאור התמונה..."
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">טקסט (HTML)</label>
+          <textarea
+            value={props.text || ""}
+            onChange={(e) => updateProps(node.id, { text: e.target.value })}
+            className="w-full px-3 py-2 border rounded-md text-sm"
+            placeholder="הזן טקסט..."
+            rows={5}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">מיקום התמונה</label>
+          <select
+            value={props.imagePosition || "right"}
+            onChange={(e) =>
+              updateProps(node.id, {
+                imagePosition: e.target.value as "left" | "right",
+              })
+            }
+            className="w-full px-3 py-2 border rounded-md text-sm"
+          >
+            <option value="right">ימין</option>
+            <option value="left">שמאל</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            רוחב התמונה (%)
+          </label>
+          <input
+            type="number"
+            min="10"
+            max="90"
+            value={typeof props.imageWidth === "number" ? props.imageWidth : 50}
+            onChange={(e) =>
+              updateProps(node.id, { imageWidth: parseInt(e.target.value) })
+            }
+            className="w-full px-3 py-2 border rounded-md text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            רווח בין התמונה לטקסט (px)
+          </label>
+          <input
+            type="number"
+            min="0"
+            value={props.gap || 24}
+            onChange={(e) =>
+              updateProps(node.id, { gap: parseInt(e.target.value) })
+            }
+            className="w-full px-3 py-2 border rounded-md text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">יישור אנכי</label>
+          <select
+            value={props.alignment || "center"}
+            onChange={(e) =>
+              updateProps(node.id, {
+                alignment: e.target.value as "top" | "center" | "bottom",
+              })
+            }
+            className="w-full px-3 py-2 border rounded-md text-sm"
+          >
+            <option value="top">למעלה</option>
+            <option value="center">מרכז</option>
+            <option value="bottom">למטה</option>
+          </select>
+        </div>
+      </div>
+    );
+  }
+
+  const imagePosition = props.imagePosition || "right";
+  const imageWidth =
+    typeof props.imageWidth === "number" ? props.imageWidth : 50;
+  const textWidth = 100 - imageWidth;
+  const gap = props.gap || 24;
+  const alignment = props.alignment || "center";
+
+  const containerStyle: React.CSSProperties = {
+    display: "flex",
+    flexDirection: imagePosition === "right" ? "row" : "row-reverse",
+    gap: `${gap}px`,
+    alignItems:
+      alignment === "top"
+        ? "flex-start"
+        : alignment === "bottom"
+        ? "flex-end"
+        : "center",
+    backgroundColor: props.backgroundColor,
+    padding: props.padding || "24px",
+  };
+
+  const imageStyle: React.CSSProperties = {
+    width: `${imageWidth}%`,
+    flexShrink: 0,
+  };
+
+  const textStyle: React.CSSProperties = {
+    width: `${textWidth}%`,
+  };
+
+  return (
+    <div style={containerStyle} data-component-id={node.id}>
+      <div style={imageStyle}>
+        <div className="relative aspect-video w-full">
+          <NextImage
+            src={
+              props.imageSrc || "https://picsum.photos/seed/placeholder/600/400"
+            }
+            alt={props.imageAlt || "Image"}
+            fill
+            className="object-cover rounded"
+          />
+        </div>
+      </div>
+      <div style={textStyle} className="flex items-center">
+        <div
+          className="w-full"
+          dangerouslySetInnerHTML={{ __html: props.text || "" }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // Unknown Component Renderer
 // ============================================================================
 
@@ -451,4 +864,3 @@ function UnknownRenderer({ node }: { node: PageComponent }) {
     </div>
   );
 }
-
