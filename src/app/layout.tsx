@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Manrope } from 'next/font/google';
 import './globals.css';
+import '../styles/globals.css'; // Design system styles
+import '../styles/animations.css'; // Animation library
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 

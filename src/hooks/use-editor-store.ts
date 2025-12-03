@@ -34,6 +34,12 @@ export type EditorState = {
   // Business Context (for RAG)
   businessContext: string;
 
+  // Clipboard (for copy/paste)
+  clipboard: PageComponent | null;
+
+  // Device Preview (for responsive design)
+  devicePreview: 'desktop' | 'laptop' | 'tablet' | 'mobile';
+
   // Active RichText Element (for toolbar)
   activeRichTextElement: HTMLDivElement | null;
 };
@@ -69,7 +75,7 @@ export type EditorActions = {
   clearSelection: () => void; // Clear all selections
   deselect: () => void;
   setHovered: (id: string | null) => void;
-  
+
   // Multi-select operations
   moveComponentsToContainer: (componentIds: string[], containerId: string) => void;
 
@@ -92,6 +98,13 @@ export type EditorActions = {
 
   // RichText
   setActiveRichTextElement: (element: HTMLDivElement | null) => void;
+
+  // Clipboard
+  copyComponent: (id: string) => void;
+  pasteComponent: (targetParentId?: string) => void;
+
+  // Device Preview
+  setDevicePreview: (device: 'desktop' | 'laptop' | 'tablet' | 'mobile') => void;
 
   // Helpers
   getComponentById: (id: string) => PageComponent | null;
@@ -377,6 +390,8 @@ export const useEditorStore = create<EditorState & EditorActions>()(
     draggedId: null,
     dropTargetId: null,
     businessContext: "",
+    clipboard: null,
+    devicePreview: 'desktop',
     activeRichTextElement: null,
 
     // Initialize
@@ -509,7 +524,7 @@ export const useEditorStore = create<EditorState & EditorActions>()(
           updatedTree = moveComponentInTree(updatedTree, id, containerId, 0);
         }
         state.pageJson = updatedTree;
-        
+
         // Clear selection after move
         state.selectedIds = [];
         state.selectedId = null;
@@ -597,7 +612,7 @@ export const useEditorStore = create<EditorState & EditorActions>()(
         // Remove any future history if we're not at the end
         const newHistory = state.history.slice(0, state.historyIndex + 1);
         newHistory.push(JSON.parse(JSON.stringify(state.pageJson)));
-        
+
         // Limit history to 50 entries
         if (newHistory.length > 50) {
           newHistory.shift();
@@ -660,7 +675,43 @@ export const useEditorStore = create<EditorState & EditorActions>()(
     // RichText
     setActiveRichTextElement: (element) => {
       set((state) => {
-        state.activeRichTextElement = element;
+        state.activeRichTextElement = element as any;
+      });
+    },
+
+    // Clipboard Operations
+    copyComponent: (id) => {
+      const component = get().getComponentById(id);
+      if (component) {
+        set((state) => {
+          state.clipboard = JSON.parse(JSON.stringify(component));
+        });
+      }
+    },
+
+    pasteComponent: (targetParentId) => {
+      const clipboard = get().clipboard;
+      if (!clipboard) return;
+
+      // Clone with new IDs
+      const cloneWithNewIds = (comp: PageComponent): PageComponent => {
+        const newId = `${comp.type.toLowerCase()}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        return {
+          ...comp,
+          id: newId,
+          children: comp.children?.map(cloneWithNewIds),
+        };
+      };
+
+      const cloned = cloneWithNewIds(clipboard);
+      const parentId = targetParentId || get().selectedId || 'page-root';
+      get().addComponent(parentId, cloned);
+    },
+
+    // Device Preview
+    setDevicePreview: (device) => {
+      set((state) => {
+        state.devicePreview = device;
       });
     },
 

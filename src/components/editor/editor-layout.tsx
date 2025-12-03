@@ -10,6 +10,7 @@ import { TopToolbar } from "./top-toolbar";
 import { RichTextToolbar } from "./richtext-toolbar";
 import { LayersPanel } from "./layers-panel";
 import { QuickActions } from "./quick-actions";
+import { DeviceSelector } from "./device-selector";
 import { DevicePreviewToggle, DevicePreviewWrapper, type DeviceType } from "./device-preview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Layers, Grid3X3 } from "lucide-react";
@@ -260,8 +261,8 @@ export function EditorLayout() {
     <div className="flex flex-col h-screen w-screen bg-slate-100 dark:bg-slate-900 overflow-hidden">
       {/* Top Toolbar */}
       <TopToolbar>
-        {/* Device Preview Toggle */}
-        <DevicePreviewToggle device={devicePreview} onChange={setDevicePreview} />
+        {/* Device Preview Selector */}
+        <DeviceSelector />
       </TopToolbar>
 
       {/* RichText Toolbar (shown when RichText is selected) */}

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useEditorStore } from "@/hooks/use-editor-store";
 import { renderPage } from "./render-node";
 import { MultiSelectBar } from "./multi-select-bar";
@@ -13,6 +13,15 @@ export function Canvas() {
   const draggedId = useEditorStore((s) => s.draggedId);
   const addComponent = useEditorStore((s) => s.addComponent);
   const selectedIds = useEditorStore((s) => s.selectedIds);
+  const devicePreview = useEditorStore((s) => s.devicePreview);
+
+  // Device widths
+  const deviceWidths = {
+    desktop: '100%',
+    laptop: '1440px',
+    tablet: '768px',
+    mobile: '375px',
+  };
 
   const handleCanvasClick = (e: React.MouseEvent) => {
     // Only deselect if clicking directly on canvas background
@@ -51,6 +60,78 @@ export function Canvas() {
     }
   };
 
+  // Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Get current state
+      const state = useEditorStore.getState();
+      const { selectedId, editingId, undo, redo, duplicateComponent, deleteComponent, copyComponent, pasteComponent } = state;
+      
+      // Don't trigger shortcuts when editing text
+      if (editingId) return;
+      
+      // Check if Cmd (Mac) or Ctrl (Windows/Linux)
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+      
+      // Undo: Cmd/Ctrl + Z (without Shift)
+      if (cmdOrCtrl && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+        return;
+      }
+      
+      // Redo: Cmd/Ctrl + Shift + Z
+      if (cmdOrCtrl && e.key === 'z' && e.shiftKey) {
+        e.preventDefault();
+        redo();
+        return;
+      }
+      
+      // Duplicate: Cmd/Ctrl + D
+      if (cmdOrCtrl && e.key === 'd') {
+        e.preventDefault();
+        if (selectedId) {
+          duplicateComponent(selectedId);
+        }
+        return;
+      }
+      
+      // Copy: Cmd/Ctrl + C
+      if (cmdOrCtrl && e.key === 'c') {
+        e.preventDefault();
+        if (selectedId && copyComponent) {
+          copyComponent(selectedId);
+        }
+        return;
+      }
+      
+      // Paste: Cmd/Ctrl + V
+      if (cmdOrCtrl && e.key === 'v') {
+        e.preventDefault();
+        if (pasteComponent) {
+          pasteComponent(selectedId || undefined);
+        }
+        return;
+      }
+      
+      // Delete: Delete or Backspace key
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        if (selectedId) {
+          deleteComponent(selectedId);
+        }
+        return;
+      }
+    };
+    
+    // Add event listener
+    window.addEventListener('keydown', handleKeyDown);
+    
+    // Cleanup
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <div
       className={cn(
@@ -74,9 +155,25 @@ export function Canvas() {
         }}
       />
 
-      {/* Page Content */}
-      <div className="relative max-w-5xl mx-auto bg-white dark:bg-slate-800 shadow-xl rounded-lg overflow-hidden">
-        {renderPage(pageJson)}
+      {/* Page Content - Responsive Viewport */}
+      <div
+        style={{
+          width: deviceWidths[devicePreview],
+          maxWidth: devicePreview === 'desktop' ? '1920px' : undefined,
+          margin: '0 auto',
+          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
+        <div className="relative bg-white dark:bg-slate-800 shadow-xl rounded-lg overflow-hidden">
+          {renderPage(pageJson)}
+        </div>
+        
+        {/* Device Width Indicator */}
+        {devicePreview !== 'desktop' && (
+          <div className="text-center mt-4 text-sm text-slate-500 dark:text-slate-400">
+            {deviceWidths[devicePreview]} viewport
+          </div>
+        )}
       </div>
 
       {/* Drop Zone Indicator (when dragging from palette) */}

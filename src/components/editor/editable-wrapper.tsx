@@ -84,6 +84,19 @@ export function EditableWrapper({
         "column"
       : null;
 
+  // Visual selection styles
+  const selectionStyle: React.CSSProperties = isSelected ? {
+    outline: '2px solid #3b82f6',
+    outlineOffset: '2px',
+    position: 'relative',
+  } : isHovered ? {
+    outline: '1px dashed #3b82f6',
+    outlineOffset: '2px',
+    position: 'relative',
+  } : {
+    position: 'relative',
+  };
+
   // Handlers
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
