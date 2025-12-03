@@ -48,7 +48,10 @@ export function RenderNode({ node, parentId }: RenderNodeProps) {
   if (
     node.type === "Container" ||
     node.type === "TextContainer" ||
-    node.type === "Form"
+    node.type === "Form" ||
+    node.type === "Section" ||
+    node.type === "Grid" ||
+    node.type === "Card"
   ) {
     return (
       <EditableWrapper node={node} parentId={parentId}>
@@ -96,10 +99,12 @@ function ContainerWithChildren({
       typeof style.radius === "number" ? `${style.radius}px` : style.radius,
     border: style.border,
     width: style.width || "100%",
-    maxWidth: style.maxWidth,
+    maxWidth: (props as any).maxWidth || style.maxWidth,
+    textAlign: (props as any).textAlign || style.textAlign,
     minHeight: style.minHeight || (isHorizontal ? "auto" : undefined),
     flex: style.flex,
     flexWrap: isHorizontal ? "wrap" : undefined,
+    margin: ((props as any).maxWidth || style.maxWidth) ? "0 auto" : undefined,
   };
 
   // TextContainer specific styles
@@ -107,6 +112,83 @@ function ContainerWithChildren({
     return (
       <div
         style={{ textAlign: (props as any).align || "left", width: "100%" }}
+        data-component-id={node.id}
+        className="group"
+      >
+        <DropZone parentId={node.id} index={0} />
+        {node.children?.map((child, index) => (
+          <React.Fragment key={child.id}>
+            <RenderNode node={child} parentId={node.id} />
+            <DropZone parentId={node.id} index={index + 1} />
+          </React.Fragment>
+        ))}
+        {(!node.children || node.children.length === 0) && (
+          <ContainerDropZone containerId={node.id} isEmpty />
+        )}
+      </div>
+    );
+  }
+
+  // Section specific rendering
+  if (node.type === "Section") {
+    const sectionProps = props as any;
+    return (
+      <section
+        id={sectionProps.id}
+        className={cn("group", sectionProps.className)}
+        style={sectionProps.style}
+        data-component-id={node.id}
+      >
+        <DropZone parentId={node.id} index={0} />
+        {node.children?.map((child, index) => (
+          <React.Fragment key={child.id}>
+            <RenderNode node={child} parentId={node.id} />
+            <DropZone parentId={node.id} index={index + 1} />
+          </React.Fragment>
+        ))}
+        {(!node.children || node.children.length === 0) && (
+          <ContainerDropZone containerId={node.id} isEmpty />
+        )}
+      </section>
+    );
+  }
+
+  // Grid specific rendering
+  if (node.type === "Grid") {
+    const gridProps = props as any;
+    const gridStyle: React.CSSProperties = {
+      display: 'grid',
+      gridTemplateColumns: `repeat(${gridProps.columns || 3}, 1fr)`,
+      gap: gridProps.gap || '1rem',
+      ...gridProps.style,
+    };
+    
+    return (
+      <div
+        style={gridStyle}
+        data-component-id={node.id}
+        className="group"
+      >
+        <DropZone parentId={node.id} index={0} />
+        {node.children?.map((child, index) => (
+          <React.Fragment key={child.id}>
+            <RenderNode node={child} parentId={node.id} />
+            <DropZone parentId={node.id} index={index + 1} />
+          </React.Fragment>
+        ))}
+        {(!node.children || node.children.length === 0) && (
+          <ContainerDropZone containerId={node.id} isEmpty />
+        )}
+      </div>
+    );
+  }
+
+  // Card specific rendering (simple container)
+  if (node.type === "Card") {
+    const cardProps = props as any;
+    return (
+      <div
+        style={cardProps.style}
         data-component-id={node.id}
         className="group"
       >

@@ -5,29 +5,60 @@
 import React from "react";
 import type { PageComponent, PageData } from "./types";
 
-// Import the new atomic components
+// Import the atomic components
 import { Container } from "./atomic/Container";
 import { TextContainer } from "./atomic/TextContainer";
 import { TextSpan } from "./atomic/TextSpan";
 import { RichText } from "./atomic/RichText";
 import { ImageComponent } from "./atomic/Image";
 import { ButtonComponent } from "./atomic/Button";
+import { Section } from "./atomic/Section";
+import { Heading } from "./atomic/Heading";
+import { Text } from "./atomic/Text";
+import { Grid } from "./atomic/Grid";
+import { SimpleCard } from "./atomic/SimpleCard";
+import { TestimonialsGrid } from "./atomic/TestimonialsGrid";
+import { FAQAccordion } from "./atomic/FAQAccordion";
+import { Steps } from "./atomic/Steps";
+import { StatsGrid } from "./atomic/StatsGrid";
 import { EditableComponentWrapper } from "../editor/editable-component-wrapper";
 
 // Map component types to the actual component implementations
 const componentMap: { [key: string]: React.ComponentType<any> } = {
+  // Layout components
+  Section: Section,
   Container: Container,
+  Grid: Grid,
+  
+  // Text components
+  Heading: Heading,
+  Text: Text,
   TextContainer: TextContainer,
   TextSpan: TextSpan,
   RichText: RichText,
-  Image: ImageComponent,
+  
+  // Interactive components
   Button: ButtonComponent,
+  Card: SimpleCard,
+  
+  // Specialized components
+  TestimonialsGrid: TestimonialsGrid,
+  FAQAccordion: FAQAccordion,
+  Steps: Steps,
+  StatsGrid: StatsGrid,
+  
+  // Media components
+  Image: ImageComponent,
   Video: (props: any) => <div>Video Component (Not Implemented): {props.youtubeId}</div>,
+  
+  // Form components
   Input: (props: any) => <input placeholder={props.placeholder} />,
   Checkbox: (props: any) => <div><input type="checkbox" /> {props.label}</div>,
+  Form: (props: any) => <form>{props.children}</form>,
+  
+  // Utility components
   Divider: (props: any) => <hr />,
   Carousel: (props: any) => <div>Carousel Component (Not Implemented)</div>,
-  Form: (props: any) => <form>{props.children}</form>,
 };
 
 type RenderComponentProps = {

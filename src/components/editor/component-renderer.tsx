@@ -28,8 +28,26 @@ export function ComponentRenderer({ node, isEditing }: ComponentRendererProps) {
   switch (node.type) {
     case "Page":
       return <PageRenderer node={node} />;
+    case "Section":
+      return <SectionRenderer node={node} />;
     case "Container":
       return <ContainerRenderer node={node} />;
+    case "Heading":
+      return <HeadingRenderer node={node} />;
+    case "Text":
+      return <TextRenderer node={node} />;
+    case "Grid":
+      return <GridRenderer node={node} />;
+    case "Card":
+      return <CardRenderer node={node} />;
+    case "TestimonialsGrid":
+      return <TestimonialsGridRenderer node={node} />;
+    case "FAQAccordion":
+      return <FAQAccordionRenderer node={node} />;
+    case "Steps":
+      return <StepsRenderer node={node} />;
+    case "StatsGrid":
+      return <StatsGridRenderer node={node} />;
     case "RichText":
       return <RichTextRenderer node={node} isEditing={isEditing} />;
     case "Button":
@@ -94,6 +112,276 @@ function ContainerRenderer({ node }: { node: PageComponent }) {
   return (
     <div style={containerStyle} data-component-id={node.id}>
       {/* Children are rendered by renderNode */}
+    </div>
+  );
+}
+
+// ============================================================================
+// Section Renderer
+// ============================================================================
+
+function SectionRenderer({ node }: { node: PageComponent }) {
+  const props = node.props as any;
+  
+  return (
+    <section
+      id={props.id}
+      className={props.className}
+      style={props.style}
+      data-component-id={node.id}
+    >
+      {/* Children are rendered by renderNode */}
+    </section>
+  );
+}
+
+// ============================================================================
+// Heading Renderer
+// ============================================================================
+
+function HeadingRenderer({ node }: { node: PageComponent }) {
+  const props = node.props as any;
+  const Tag = `h${props.level || 2}` as keyof JSX.IntrinsicElements;
+  
+  return React.createElement(
+    Tag,
+    {
+      style: props.style,
+      'data-component-id': node.id,
+    },
+    props.text || ''
+  );
+}
+
+// ============================================================================
+// Text Renderer
+// ============================================================================
+
+function TextRenderer({ node }: { node: PageComponent }) {
+  const props = node.props as any;
+  
+  return (
+    <p
+      style={props.style}
+      data-component-id={node.id}
+    >
+      {props.text || ''}
+    </p>
+  );
+}
+
+// ============================================================================
+// Grid Renderer
+// ============================================================================
+
+function GridRenderer({ node }: { node: PageComponent }) {
+  const props = node.props as any;
+  
+  const gridStyle: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: `repeat(${props.columns || 3}, 1fr)`,
+    gap: props.gap || '1rem',
+    ...props.style,
+  };
+  
+  return (
+    <div
+      style={gridStyle}
+      data-component-id={node.id}
+    >
+      {/* Children are rendered by renderNode */}
+    </div>
+  );
+}
+
+// ============================================================================
+// Card Renderer (Simple)
+// ============================================================================
+
+function CardRenderer({ node }: { node: PageComponent }) {
+  const props = node.props as any;
+  
+  return (
+    <div
+      style={props.style}
+      data-component-id={node.id}
+    >
+      {/* Children are rendered by renderNode */}
+    </div>
+  );
+}
+
+// ============================================================================
+// TestimonialsGrid Renderer
+// ============================================================================
+
+function TestimonialsGridRenderer({ node }: { node: PageComponent }) {
+  const props = node.props as any;
+  const testimonials = props.testimonials || [];
+  const accentColor = props.accentColor || '#1A537D';
+  
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '2rem',
+      }}
+      data-component-id={node.id}
+    >
+      {testimonials.map((testimonial: string, index: number) => (
+        <div
+          key={index}
+          style={{
+            backgroundColor: '#FFFFFF',
+            padding: '2rem',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            borderLeft: `4px solid ${accentColor}`,
+          }}
+        >
+          <p style={{ fontSize: '1rem', lineHeight: '1.6', color: '#333' }}>
+            "{testimonial}"
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================================
+// FAQAccordion Renderer
+// ============================================================================
+
+function FAQAccordionRenderer({ node }: { node: PageComponent }) {
+  const props = node.props as any;
+  const items = props.items || [];
+  const accentColor = props.accentColor || '#1A537D';
+  
+  // Parse FAQ items (format: "ש: question ת: answer")
+  const parsedItems = items.map((item: string) => {
+    const parts = item.split(' ת: ');
+    const question = parts[0]?.replace('ש: ', '') || '';
+    const answer = parts[1] || '';
+    return { question, answer };
+  });
+  
+  return (
+    <Accordion type="single" collapsible className="w-full" data-component-id={node.id}>
+      {parsedItems.map((item: any, index: number) => (
+        <AccordionItem key={index} value={`item-${index}`}>
+          <AccordionTrigger 
+            className="text-right"
+            style={{ backgroundColor: accentColor + '10' }}
+          >
+            {item.question}
+          </AccordionTrigger>
+          <AccordionContent className="text-right">
+            <p>{item.answer}</p>
+          </AccordionContent>
+        </AccordionItem>
+      ))}
+    </Accordion>
+  );
+}
+
+// ============================================================================
+// Steps Renderer
+// ============================================================================
+
+function StepsRenderer({ node }: { node: PageComponent }) {
+  const props = node.props as any;
+  const items = props.items || [];
+  const accentColor = props.accentColor || '#1A537D';
+  
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '2rem',
+      }}
+      data-component-id={node.id}
+    >
+      {items.map((item: string, index: number) => (
+        <div
+          key={index}
+          style={{
+            display: 'flex',
+            gap: '1.5rem',
+            alignItems: 'flex-start',
+          }}
+        >
+          <div
+            style={{
+              minWidth: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              backgroundColor: accentColor,
+              color: '#FFFFFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.25rem',
+              fontWeight: 'bold',
+              flexShrink: 0,
+            }}
+          >
+            {index + 1}
+          </div>
+          <div style={{ flex: 1, paddingTop: '0.5rem' }}>
+            <p style={{ fontSize: '1.125rem', lineHeight: '1.6', color: '#333' }}>
+              {item}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================================
+// StatsGrid Renderer
+// ============================================================================
+
+function StatsGridRenderer({ node }: { node: PageComponent }) {
+  const props = node.props as any;
+  const stats = props.stats || [];
+  const textColor = props.textColor || '#FFFFFF';
+  
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '2rem',
+        textAlign: 'center',
+      }}
+      data-component-id={node.id}
+    >
+      {stats.map((stat: { label: string; value: string }, index: number) => (
+        <div key={index}>
+          <div
+            style={{
+              fontSize: '3rem',
+              fontWeight: 'bold',
+              color: textColor,
+              marginBottom: '0.5rem',
+            }}
+          >
+            {stat.value}
+          </div>
+          <div
+            style={{
+              fontSize: '1.125rem',
+              color: textColor,
+              opacity: 0.9,
+            }}
+          >
+            {stat.label}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

@@ -4,11 +4,13 @@ import React from 'react';
 import type { ContainerProps } from '../types';
 import { cn } from '@/lib/utils';
 
-export const Container: React.FC<ContainerProps & { children: React.ReactNode; id: string; onClick?: () => void; style?: any }> = ({
+export const Container: React.FC<ContainerProps & { children: React.ReactNode; id: string; onClick?: () => void; style?: any; maxWidth?: string; textAlign?: string }> = ({
   style = {},
   children,
   id,
   onClick,
+  maxWidth,
+  textAlign,
 }) => {
   const {
     background,
@@ -20,7 +22,6 @@ export const Container: React.FC<ContainerProps & { children: React.ReactNode; i
     justifyContent,
     gap,
     width,
-    maxWidth,
   } = style;
 
   const styles: React.CSSProperties = {
@@ -28,13 +29,16 @@ export const Container: React.FC<ContainerProps & { children: React.ReactNode; i
     padding: typeof padding === 'number' ? `${padding}px` : padding,
     borderRadius: typeof radius === 'number' ? `${radius}px` : radius,
     border,
-    flexDirection,
+    flexDirection: flexDirection || 'column',
     alignItems,
     justifyContent,
     gap: typeof gap === 'number' ? `${gap}px` : gap,
     width,
-    maxWidth,
+    maxWidth: maxWidth || style.maxWidth,
+    textAlign: textAlign || style.textAlign,
     display: 'flex', // Default to flexbox
+    margin: '0 auto', // Center the container
+    ...style, // Allow style overrides
   };
 
   return (

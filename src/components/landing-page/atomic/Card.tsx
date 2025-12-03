@@ -108,3 +108,5 @@ export function CardComponent({
   );
 }
 
+// Export as Card for component map compatibility
+export const Card = CardComponent;
