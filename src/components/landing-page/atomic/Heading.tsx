@@ -19,7 +19,7 @@ export const Heading: React.FC<HeadingProps> = ({
   return React.createElement(
     Tag,
     {
-      style,
+      style: { ...style, textAlign: 'right', direction: 'rtl' },
       'data-component-id': id,
       'data-component-type': 'Heading',
     },

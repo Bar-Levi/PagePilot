@@ -27,7 +27,7 @@ export const FAQAccordion: React.FC<FAQAccordionProps> = ({
 
   return (
     <div
-      style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+      style={{ display: 'flex', flexDirection: 'column', gap: '1rem', direction: 'rtl' }}
       data-component-id={id}
       data-component-type="FAQAccordion"
     >
@@ -72,7 +72,7 @@ export const FAQAccordion: React.FC<FAQAccordionProps> = ({
                 borderTop: `1px solid ${accentColor}20`,
               }}
             >
-              <p style={{ color: '#666666', lineHeight: '1.6' }}>
+              <p style={{ color: '#666666', lineHeight: '1.6', textAlign: 'right', direction: 'rtl' }}>
                 {item.answer}
               </p>
             </div>

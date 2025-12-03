@@ -146,7 +146,7 @@ function HeadingRenderer({ node }: { node: PageComponent }) {
   return React.createElement(
     Tag,
     {
-      style: props.style,
+      style: { ...props.style, textAlign: 'right', direction: 'rtl' },
       'data-component-id': node.id,
     },
     props.text || ''
@@ -162,7 +162,7 @@ function TextRenderer({ node }: { node: PageComponent }) {
   
   return (
     <p
-      style={props.style}
+      style={{ ...props.style, textAlign: 'right', direction: 'rtl' }}
       data-component-id={node.id}
     >
       {props.text || ''}
@@ -220,6 +220,24 @@ function TestimonialsGridRenderer({ node }: { node: PageComponent }) {
   const testimonials = props.testimonials || [];
   const accentColor = props.accentColor || '#1A537D';
   
+  // Helper to extract text and author from testimonial
+  const getTestimonialData = (item: any): { text: string; author?: string } => {
+    if (typeof item === 'string') {
+      return { text: item };
+    }
+    if (item && typeof item === 'object') {
+      if ('quote' in item) {
+        return { text: item.quote || '', author: item.author };
+      }
+      if ('text' in item) {
+        return { text: item.text || '' };
+      }
+      // Fallback for any other object structure
+      return { text: JSON.stringify(item) };
+    }
+    return { text: String(item) };
+  };
+  
   return (
     <div
       style={{
@@ -229,22 +247,30 @@ function TestimonialsGridRenderer({ node }: { node: PageComponent }) {
       }}
       data-component-id={node.id}
     >
-      {testimonials.map((testimonial: string, index: number) => (
-        <div
-          key={index}
-          style={{
-            backgroundColor: '#FFFFFF',
-            padding: '2rem',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            borderLeft: `4px solid ${accentColor}`,
-          }}
-        >
-          <p style={{ fontSize: '1rem', lineHeight: '1.6', color: '#333' }}>
-            "{testimonial}"
-          </p>
-        </div>
-      ))}
+      {testimonials.map((testimonial: any, index: number) => {
+        const { text, author } = getTestimonialData(testimonial);
+        return (
+          <div
+            key={index}
+            style={{
+              backgroundColor: '#FFFFFF',
+              padding: '2rem',
+              borderRadius: '12px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              borderLeft: `4px solid ${accentColor}`,
+            }}
+          >
+            <p style={{ fontSize: '1rem', lineHeight: '1.6', color: '#333', marginBottom: author ? '1rem' : '0', textAlign: 'right', direction: 'rtl' }}>
+              "{text}"
+            </p>
+            {author && (
+              <p style={{ fontSize: '0.875rem', color: '#666', fontWeight: '600', textAlign: 'right', direction: 'rtl' }}>
+                — {author}
+              </p>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -258,12 +284,22 @@ function FAQAccordionRenderer({ node }: { node: PageComponent }) {
   const items = props.items || [];
   const accentColor = props.accentColor || '#1A537D';
   
-  // Parse FAQ items (format: "ש: question ת: answer")
-  const parsedItems = items.map((item: string) => {
-    const parts = item.split(' ת: ');
-    const question = parts[0]?.replace('ש: ', '') || '';
-    const answer = parts[1] || '';
-    return { question, answer };
+  // Parse FAQ items - handle both string format and object format
+  const parsedItems = items.map((item: any) => {
+    if (typeof item === 'string') {
+      const parts = item.split(' ת: ');
+      const question = parts[0]?.replace('ש: ', '') || '';
+      const answer = parts[1] || '';
+      return { question, answer };
+    }
+    // Already an object with question/answer
+    if (item && typeof item === 'object') {
+      return {
+        question: item.question || '',
+        answer: item.answer || ''
+      };
+    }
+    return { question: String(item), answer: '' };
   });
   
   return (
@@ -294,16 +330,28 @@ function StepsRenderer({ node }: { node: PageComponent }) {
   const items = props.items || [];
   const accentColor = props.accentColor || '#1A537D';
   
+  // Helper to extract text from item
+  const getText = (item: any): string => {
+    if (typeof item === 'string') {
+      return item;
+    }
+    if (item && typeof item === 'object' && 'text' in item) {
+      return item.text;
+    }
+    return String(item);
+  };
+  
   return (
     <div
       style={{
         display: 'flex',
         flexDirection: 'column',
         gap: '2rem',
+        direction: 'rtl',
       }}
       data-component-id={node.id}
     >
-      {items.map((item: string, index: number) => (
+      {items.map((item: any, index: number) => (
         <div
           key={index}
           style={{
@@ -330,8 +378,8 @@ function StepsRenderer({ node }: { node: PageComponent }) {
             {index + 1}
           </div>
           <div style={{ flex: 1, paddingTop: '0.5rem' }}>
-            <p style={{ fontSize: '1.125rem', lineHeight: '1.6', color: '#333' }}>
-              {item}
+            <p style={{ fontSize: '1.125rem', lineHeight: '1.6', color: '#333', textAlign: 'right', direction: 'rtl' }}>
+              {getText(item)}
             </p>
           </div>
         </div>
@@ -356,6 +404,7 @@ function StatsGridRenderer({ node }: { node: PageComponent }) {
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         gap: '2rem',
         textAlign: 'center',
+        direction: 'rtl',
       }}
       data-component-id={node.id}
     >
@@ -376,6 +425,7 @@ function StatsGridRenderer({ node }: { node: PageComponent }) {
               fontSize: '1.125rem',
               color: textColor,
               opacity: 0.9,
+              direction: 'rtl',
             }}
           >
             {stat.label}

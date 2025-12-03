@@ -24,6 +24,7 @@ export const Steps: React.FC<StepsProps> = ({
         flexDirection: 'column',
         gap: '2rem',
         position: 'relative',
+        direction: 'rtl',
       }}
       data-component-id={id}
       data-component-type="Steps"
@@ -55,7 +56,7 @@ export const Steps: React.FC<StepsProps> = ({
             {index + 1}
           </div>
           <div style={{ flex: 1, paddingTop: '0.5rem' }}>
-            <p style={{ fontSize: '1.125rem', lineHeight: '1.6', color: '#333' }}>
+            <p style={{ fontSize: '1.125rem', lineHeight: '1.6', color: '#333', textAlign: 'right', direction: 'rtl' }}>
               {getText(item)}
             </p>
           </div>

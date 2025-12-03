@@ -14,7 +14,7 @@ export const Text: React.FC<TextProps> = ({
 }) => {
   return (
     <p
-      style={style}
+      style={{ ...style, textAlign: 'right', direction: 'rtl' }}
       data-component-id={id}
       data-component-type="Text"
     >

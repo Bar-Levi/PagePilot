@@ -19,6 +19,7 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         gap: '2rem',
         textAlign: 'center',
+        direction: 'rtl',
       }}
       data-component-id={id}
       data-component-type="StatsGrid"
@@ -40,6 +41,7 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
               fontSize: '1.125rem',
               color: textColor,
               opacity: 0.9,
+              direction: 'rtl',
             }}
           >
             {stat.label}
