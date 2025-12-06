@@ -24,6 +24,7 @@ import {
   Save,
 } from "lucide-react";
 import { TemplatesGallery } from "./templates-gallery";
+import { PublishPanel } from "./publish-panel";
 
 type TopToolbarProps = {
   children?: React.ReactNode;
@@ -166,10 +167,8 @@ export function TopToolbar({ children }: TopToolbarProps) {
             <TooltipContent>תצוגה מקדימה</TooltipContent>
           </Tooltip>
 
-          <Button variant="default" size="sm" className="gap-2 ml-2">
-            <Save className="w-4 h-4" />
-            <span>שמור</span>
-          </Button>
+          {/* Publish Panel */}
+          <PublishPanel />
         </div>
       </header>
     </TooltipProvider>

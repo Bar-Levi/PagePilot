@@ -12,6 +12,7 @@ import { LayersPanel } from "./layers-panel";
 import { QuickActions } from "./quick-actions";
 import { DeviceSelector } from "./device-selector";
 import { DevicePreviewToggle, DevicePreviewWrapper, type DeviceType } from "./device-preview";
+import { OnboardingGuide } from "./onboarding-guide";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Layers, Grid3X3 } from "lucide-react";
 import type { PageComponent } from "@/components/landing-page/types";
@@ -307,6 +308,9 @@ export function EditorLayout() {
 
       {/* Quick Actions Bar (floating at bottom) */}
       <QuickActions />
+
+      {/* Onboarding Guide (shows once for new users) */}
+      <OnboardingGuide />
     </div>
   );
 }

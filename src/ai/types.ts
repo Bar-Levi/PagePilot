@@ -73,6 +73,13 @@ export interface DeepAnalysisOutput {
 // Structure & Sections Output (Stage 2)
 // ============================================================================
 
+// Missing data alert for incomplete sections
+export interface MissingDataAlert {
+  field: string;           // e.g., "image", "testimonials", "faqItems"
+  message: string;         // Human-readable message
+  severity: "warning" | "critical"; // Warning = can publish, Critical = blocks publish
+}
+
 export interface SectionMapping {
   id: string; // unique section id
   type: SectionType;
@@ -94,6 +101,8 @@ export interface SectionMapping {
     backgroundStyle?: "solid" | "gradient" | "image" | "accent" | "none";
     imagePosition?: "left" | "right"; // For image+text sections
   };
+  // Missing data tracking for publish validation
+  missingData?: MissingDataAlert[];
 }
 
 export type SectionType =

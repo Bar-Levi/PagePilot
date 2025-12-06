@@ -59,9 +59,45 @@ export type PageComponent = {
   children?: PageComponent[];
 };
 
+// ============================================================================
+// PAGE METADATA & PUBLISHING
+// ============================================================================
+
+// Integration configurations for the page
+export interface PageIntegrations {
+  googleAnalytics?: string;    // GA4 Measurement ID (e.g., G-XXXXXXX)
+  microsoftClarity?: string;   // Clarity Project ID
+  sheetsWebhook?: string;      // Google Sheets webhook URL for form submissions
+}
+
+// Page publish status
+export type PageStatus = "draft" | "published" | "missing_info";
+
+// Missing data alert for UI display
+export interface PageMissingDataAlert {
+  sectionId: string;
+  sectionType: string;
+  field: string;
+  message: string;
+  severity: "warning" | "critical";
+}
+
+// Complete page metadata for dashboard and publishing
+export interface PageMetadata {
+  id: string;
+  title: string;
+  status: PageStatus;
+  integrations: PageIntegrations;
+  missingDataAlerts: PageMissingDataAlert[];
+  createdAt: string;
+  updatedAt: string;
+  publishedUrl?: string;
+}
+
 // The entire page is just an array of root-level components.
 export type PageData = {
   pageStructure: PageComponent[];
+  metadata?: PageMetadata;
 };
 
 /**
@@ -136,11 +172,11 @@ export type ContainerProps = {
     flexDirection?: "row" | "column"; // deprecated, use layout instead
     alignItems?: "flex-start" | "center" | "flex-end" | "stretch";
     justifyContent?:
-      | "flex-start"
-      | "center"
-      | "flex-end"
-      | "space-between"
-      | "space-around";
+    | "flex-start"
+    | "center"
+    | "flex-end"
+    | "space-between"
+    | "space-around";
     gap?: string | number;
     width?: string;
     maxWidth?: string;
@@ -196,12 +232,12 @@ export type ButtonProps = {
   text: string;
   href: string;
   variant?:
-    | "default"
-    | "destructive"
-    | "outline"
-    | "secondary"
-    | "ghost"
-    | "link";
+  | "default"
+  | "destructive"
+  | "outline"
+  | "secondary"
+  | "ghost"
+  | "link";
   size?: "default" | "sm" | "lg" | "icon";
   radius?: string;
   iconBefore?: string; // Lucide icon name

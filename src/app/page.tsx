@@ -35,6 +35,13 @@ export default function Home() {
           </Link>
           <nav className="flex items-center gap-6">
             <Link
+              href="/dashboard"
+              className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary transition-colors"
+              prefetch={false}
+            >
+              לוח בקרה
+            </Link>
+            <Link
               href="/editor"
               className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary transition-colors"
               prefetch={false}
