@@ -33,6 +33,9 @@ const businessInputSchema = z.object({
   businessName: z.string().min(2, {
     message: "שם העסק חייב להכיל לפחות 2 תווים",
   }),
+  email: z.string().email({
+    message: "כתובת מייל לא תקינה",
+  }),
   businessType: z.string().min(3, {
     message: "אנא תאר את סוג העסק",
   }),
@@ -69,6 +72,7 @@ export function BusinessInputForm() {
     resolver: zodResolver(businessInputSchema),
     defaultValues: {
       businessName: "",
+      email: "",
       businessType: "",
       audience: "",
       mainGoal: "leads",
@@ -129,6 +133,7 @@ export function BusinessInputForm() {
   const handleAutoFill = () => {
     // Fill all fields with realistic data for Hermes Finance
     form.setValue("businessName", "Hermes Finance");
+    form.setValue("email", "contact@hermesfinance.com");
     form.setValue("businessType", "חברת יעוץ פיננסי המתמחה בסיוע לצעירים בגילאי 20-30 בניהול כספים, השקעות, תכנון פיננסי וחיסכון. אנו מספקים כלים, הדרכות וייעוץ אישי כדי לעזור לצעירים להשיג עצמאות פיננסית ולבנות עתיד כלכלי יציב.");
     form.setValue("audience", "צעירים בגילאי 20-30 שמתחילים את דרכם המקצועית, רוצים ללמוד לנהל כספים נכון, לחסוך לעתיד, להשקיע בחכמה ולבנות בסיס פיננסי איתן. אנשים שמחפשים הדרכה מקצועית וכלים פרקטיים לניהול כספים.");
     
@@ -206,12 +211,13 @@ Hermes Finance היא חברת יעוץ פיננסי המתמחה בסיוע ל�
       description: "כל השדות מולאו עם נתוני Hermes Finance. אתה יכול לערוך אותם לפי הצורך.",
     });
   };
-
   async function onSubmit(values: BusinessInputFormData) {
     setIsGenerating(true);
     
     try {
-      const response = await fetch("/api/generate-page", {
+      // Step 1: Generate the page with AI
+      console.log("🎨 Generating page with AI...");
+      const generateResponse = await fetch("/api/generate-page", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -224,27 +230,58 @@ Hermes Finance היא חברת יעוץ פיננסי המתמחה בסיוע ל�
         }),
       });
 
-      if (!response.ok) {
-        const error = await response.json();
+      if (!generateResponse.ok) {
+        const error = await generateResponse.json();
         throw new Error(error.error || "Failed to generate page");
       }
 
-      const result = await response.json();
+      const generateResult = await generateResponse.json();
+      console.log("✅ Page generated -", generateResult.page.children?.length || 0, "sections");
       
-      // Log the final page JSON for debugging
-      console.log("🎉 Page generated successfully!");
-      console.log("📄 Final Page JSON:", JSON.stringify(result.page, null, 2));
-      console.log("📊 Analytics:", JSON.stringify(result.analytics, null, 2));
-      console.log("📈 Page has", result.page.children?.length || 0, "sections");
+      // Step 2: Save to MongoDB and create account
+      console.log("💾 Saving to MongoDB and creating account...");
+      const saveResponse = await fetch("/api/create-landing-page", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          businessName: values.businessName,
+          email: values.email,
+          pageConfig: generateResult.page,
+        }),
+      });
+
+      if (!saveResponse.ok) {
+        const error = await saveResponse.json();
+        throw new Error(error.error || "Failed to save page");
+      }
+
+      const saveResult = await saveResponse.json();
+      console.log("✅ Saved to MongoDB!");
       
-      setPageJson(result.page);
+      // Set the page in editor
+      setPageJson(generateResult.page);
       
+      // Show success message with OTP and URLs
       toast({
-        title: "הדף נוצר בהצלחה!",
-        description: `הדף מוכן לעריכה עם ${result.page.children?.length || 0} סקשנים. הסוכנים יצרו עבורך דף מותאם אישית.`,
+        title: "🎉 הדף נוצר והחשבון שלך מוכן!",
+        description: (
+          <div className="space-y-2 text-sm">
+            <p>✅ הדף נוצר עם {generateResult.page.children?.length || 0} סקשנים</p>
+            <p>✅ החשבון שלך נוצר בהצלחה</p>
+            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg space-y-1">
+              <p className="font-semibold">📧 נשלח מייל ל: {saveResult.tempEmail}</p>
+              <p className="font-mono text-xs">🔐 קוד כניסה: {saveResult.tempOtp}</p>
+              <p className="text-xs mt-2">🌐 דף ציבורי: {saveResult.publicUrl}</p>
+              <p className="text-xs">🔑 התחברות: {saveResult.loginUrl}</p>
+            </div>
+          </div>
+        ),
+        duration: 15000, // Show for 15 seconds
       });
     } catch (error: any) {
-      console.error("Error generating page:", error);
+      console.error("Error creating page:", error);
       toast({
         variant: "destructive",
         title: "שגיאה ביצירת הדף",
@@ -306,6 +343,28 @@ Hermes Finance היא חברת יעוץ פיננסי המתמחה בסיוע ל�
                       <FormControl>
                         <Input placeholder="לדוגמה: חנות צעצועים לכלבים" {...field} />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>מייל ליצירת קשר *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="email"
+                          placeholder="your@email.com" 
+                          {...field} 
+                          dir="ltr"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        נשלח לך קוד כניסה למייל זה
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

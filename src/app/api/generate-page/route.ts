@@ -38,8 +38,7 @@ export async function POST(request: NextRequest) {
     const result = await generateLandingPageFlow(businessInput);
 
     // Log the final result for debugging
-    console.log("✅ Final result - Page has", result.page.children?.length || 0, "sections");
-    console.log("📊 Page structure:", JSON.stringify(result.page, null, 2));
+    console.log("✅ Page generated -", result.page.children?.length || 0, "sections");
 
     return NextResponse.json({
       page: result.page,

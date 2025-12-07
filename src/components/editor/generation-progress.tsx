@@ -12,6 +12,7 @@ import {
   Lightbulb,
   Rocket,
   Zap,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -77,11 +78,31 @@ export function GenerationProgress() {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900" dir="rtl">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 3s linear infinite;
+        }
+        .animate-spin-fast {
+          animation: spin-slow 1s linear infinite;
+        }
+        .animate-shimmer {
+          animation: shimmer 2s infinite;
+        }
+      `}} />
+      
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900" />
       <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500 rounded-full blur-[128px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-500 rounded-full blur-[100px]" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500 rounded-full blur-[128px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-500 rounded-full blur-[100px] animate-pulse" />
       </div>
 
       {/* Main content */}
@@ -90,18 +111,16 @@ export function GenerationProgress() {
           
           {/* Header with spinner */}
           <div className="text-center mb-8">
-            <div className="relative inline-flex items-center justify-center w-20 h-20 mb-6">
-              {/* Spinning ring */}
-              <div className="absolute inset-0 rounded-full border-4 border-indigo-500/20" />
-              <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-indigo-500 animate-spin" />
-              <Rocket className="w-8 h-8 text-indigo-400" />
+            <div className="relative inline-flex items-center justify-center w-24 h-24 mb-6 bg-indigo-500/10 rounded-full ring-4 ring-indigo-500/20">
+              <Loader2 className="w-24 h-24 text-indigo-500 animate-spin-slow absolute opacity-50" />
+              <Rocket className="w-10 h-10 text-indigo-400 z-10" />
             </div>
             
             <h2 className="text-2xl font-bold text-white mb-2">
               בונים את הדף שלך
             </h2>
-            <p className="text-slate-400">
-              {currentStep.description}
+            <p className="text-slate-400 animate-pulse">
+              {currentStep.description}...
             </p>
           </div>
 
@@ -111,11 +130,13 @@ export function GenerationProgress() {
               <span className="text-sm font-medium text-white">{currentStep.name}</span>
               <span className="text-sm font-bold text-indigo-400">{Math.round(progress)}%</span>
             </div>
-            <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+            <div className="h-2 bg-slate-700 rounded-full overflow-hidden relative">
               <div 
-                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500 ease-out"
+                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500 ease-out relative overflow-hidden"
                 style={{ width: `${progress}%` }}
-              />
+              >
+                <div className="absolute inset-0 bg-white/30 w-full h-full animate-shimmer" />
+              </div>
             </div>
           </div>
 
@@ -145,7 +166,7 @@ export function GenerationProgress() {
                     {isCompleted ? (
                       <CheckCircle2 className="w-5 h-5" />
                     ) : isCurrent ? (
-                      <div className="w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                      <Loader2 className="w-5 h-5 animate-spin-fast text-indigo-400" />
                     ) : (
                       step.icon
                     )}

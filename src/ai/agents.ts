@@ -1,10 +1,45 @@
 "use server";
 
-import { getAI } from "@/ai/genkit";
+import { getAI, FALLBACK_MODELS } from "@/ai/genkit";
 import { z } from "genkit";
 import type { BusinessInput } from "./types";
 import type { DeepAnalysisOutput } from "./types";
 import type { DocChunk } from "./rag";
+
+async function executeWithFallback(
+    ai: any,
+    basePromptName: string,
+    promptConfig: any,
+    input: any
+) {
+    let lastError;
+
+    for (const model of FALLBACK_MODELS) {
+        try {
+            console.log(`🤖 Executing ${basePromptName} with model: ${model}`);
+
+            // Create a unique name for this model's prompt variant
+            const specificPromptName = `${basePromptName}_${model.replace(/[^a-zA-Z0-9]/g, '_')}`;
+
+            const promptFn = ai.definePrompt({
+                ...promptConfig,
+                name: specificPromptName,
+                model: model,
+            });
+
+            const { output } = await promptFn(input);
+            return output;
+        } catch (error: any) {
+            console.warn(`⚠️ Model ${model} failed for ${basePromptName}:`, error.message);
+            lastError = error;
+
+            // Delay before trying next model (4 seconds to handle rate limits)
+            await new Promise(resolve => setTimeout(resolve, 4000));
+        }
+    }
+
+    throw lastError || new Error(`All models failed for ${basePromptName}`);
+}
 
 // ============================================================================
 // Deep Analysis Agent - Step 1
@@ -61,10 +96,16 @@ export async function runDeepAnalysisAgent({
         throw new Error("AI not available");
     }
 
-    // Initialize prompt if needed
-    if (!deepAnalysisPrompt) {
-        deepAnalysisPrompt = ai.definePrompt({
-            name: "deepAnalysisPrompt",
+    // Prepare RAG context
+    const ragContext =
+        ragChunks.length > 0
+            ? ragChunks.map((chunk) => chunk.content).join("\n\n---\n\n")
+            : "אין מידע נוסף זמין. השתמש רק במידע שסופק בקלט העסקי.";
+
+    const output = await executeWithFallback(
+        ai,
+        "deepAnalysisPrompt",
+        {
             input: {
                 schema: z.object({
                     businessInput: z.any(),
@@ -150,19 +191,12 @@ Generate:
 Remember: This is RAW TEXT - no HTML, no structure, just pure content that will be structured later.
 
 Output ONLY valid JSON matching the schema.`,
-        });
-    }
-
-    // Prepare RAG context
-    const ragContext =
-        ragChunks.length > 0
-            ? ragChunks.map((chunk) => chunk.content).join("\n\n---\n\n")
-            : "אין מידע נוסף זמין. השתמש רק במידע שסופק בקלט העסקי.";
-
-    const { output } = await deepAnalysisPrompt({
-        businessInput: input,
-        ragContext,
-    });
+        },
+        {
+            businessInput: input,
+            ragContext,
+        }
+    );
 
     console.log("🧠 Deep Analysis Output:", JSON.stringify(output, null, 2));
 
@@ -232,9 +266,10 @@ export async function runStructureMappingAgent({
         throw new Error("AI not available");
     }
 
-    if (!structureMappingPrompt) {
-        structureMappingPrompt = ai.definePrompt({
-            name: "structureMappingPrompt",
+    const output = await executeWithFallback(
+        ai,
+        "structureMappingPrompt",
+        {
             input: {
                 schema: z.object({
                     businessInput: z.any(),
@@ -314,13 +349,12 @@ Make sure the sections create a logical, persuasive flow that:
 7. Add helpful image prompts for visual sections
 
 Output ONLY valid JSON matching the schema.`,
-        });
-    }
-
-    const { output } = await structureMappingPrompt({
-        businessInput: input,
-        deepAnalysis,
-    });
+        },
+        {
+            businessInput: input,
+            deepAnalysis,
+        }
+    );
 
     console.log("🏗️ Structure Mapping Output:", JSON.stringify(output, null, 2));
 
@@ -399,9 +433,10 @@ export async function runColorPaletteAgent({
         throw new Error("AI not available");
     }
 
-    if (!colorPalettePrompt) {
-        colorPalettePrompt = ai.definePrompt({
-            name: "colorPalettePrompt",
+    const output = await executeWithFallback(
+        ai,
+        "colorPalettePrompt",
+        {
             input: {
                 schema: z.object({
                     businessInput: z.any(),
@@ -513,14 +548,13 @@ Generate a complete, harmonious color palette with:
 6. Think about the Israeli/Hebrew market
 
 Output ONLY valid JSON matching the schema.`,
-        });
-    }
-
-    const { output } = await colorPalettePrompt({
-        businessInput: input,
-        deepAnalysis,
-        structuredSections,
-    });
+        },
+        {
+            businessInput: input,
+            deepAnalysis,
+            structuredSections,
+        }
+    );
 
     console.log("🎨 Color Palette Output:", JSON.stringify(output, null, 2));
 
