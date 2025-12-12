@@ -181,6 +181,15 @@ const categories: Category[] = [
         description: "סליידר וידאו",
         aiSupported: false,
       },
+      {
+        type: "ImageCarouselSection",
+        label: "קרוסלת תמונות + כותרת",
+        labelEn: "Image Carousel Section",
+        icon: <Images className="w-5 h-5" />,
+        description: "סקשן עם כותרת, קרוסלת תמונות ותיאור",
+        popular: true,
+        aiSupported: true,
+      },
     ],
   },
   {

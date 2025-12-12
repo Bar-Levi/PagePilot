@@ -119,7 +119,14 @@ export type SectionType =
   | "pricing"
   | "faq"
   | "cta"
-  | "footer";
+  | "footer"
+  // Professional landing page section types
+  | "authority"
+  | "disqualification"
+  | "valueStack"
+  | "guarantee"
+  | "painPoints"
+  | "roadmap";
 
 export interface StructuredSectionsOutput {
   sections: SectionMapping[];

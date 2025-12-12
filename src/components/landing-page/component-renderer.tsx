@@ -21,6 +21,14 @@ import { TestimonialsGrid } from "./atomic/TestimonialsGrid";
 import { FAQAccordion } from "./atomic/FAQAccordion";
 import { Steps } from "./atomic/Steps";
 import { StatsGrid } from "./atomic/StatsGrid";
+// Professional landing page components
+import { AuthorityBio } from "./atomic/AuthorityBio";
+import { DisqualificationCard } from "./atomic/DisqualificationCard";
+import { ValueStack } from "./atomic/ValueStack";
+import { GuaranteeSection } from "./atomic/GuaranteeSection";
+import { AlertBanner } from "./atomic/AlertBanner";
+import { PainPointCard } from "./atomic/PainPointCard";
+import { StepsRoadmap } from "./atomic/StepsRoadmap";
 import { EditableComponentWrapper } from "../editor/editable-component-wrapper";
 
 // Map component types to the actual component implementations
@@ -59,6 +67,15 @@ const componentMap: { [key: string]: React.ComponentType<any> } = {
   // Utility components
   Divider: (props: any) => <hr />,
   Carousel: (props: any) => <div>Carousel Component (Not Implemented)</div>,
+  
+  // Professional landing page components
+  AuthorityBio: AuthorityBio,
+  DisqualificationCard: DisqualificationCard,
+  ValueStack: ValueStack,
+  GuaranteeSection: GuaranteeSection,
+  AlertBanner: AlertBanner,
+  PainPointCard: PainPointCard,
+  StepsRoadmap: StepsRoadmap,
 };
 
 type RenderComponentProps = {

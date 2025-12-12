@@ -601,8 +601,60 @@ function createComponentFromType(type: string): any {
         ],
       };
 
+    case "ImageCarouselSection":
+      return {
+        id,
+        type: "ImageCarouselSection",
+        props: {
+          headline: "גלריית תמונות",
+          description: "",
+          images: [
+            { src: "https://picsum.photos/seed/carousel1/800/450", alt: "תמונה 1", caption: "" },
+            { src: "https://picsum.photos/seed/carousel2/800/450", alt: "תמונה 2", caption: "" },
+            { src: "https://picsum.photos/seed/carousel3/800/450", alt: "תמונה 3", caption: "" },
+          ],
+          backgroundColor: "#0A1628",
+          headlineColor: "#FFFFFF",
+          underlineColor: "#00D4AA",
+          accentColor: "#00D4AA",
+          showDots: true,
+          showArrows: true,
+          showCounter: true,
+          aspectRatio: "16:9",
+          imageObjectFit: "contain",
+          autoplay: false,
+        },
+      };
+
+    case "ImageText":
+      return {
+        id,
+        type: "ImageText",
+        props: {
+          imageSrc: "https://picsum.photos/seed/imagetext/600/400",
+          imageAlt: "תמונה",
+          text: '<p style="font-size: 18px; line-height: 1.7;">הוסף כאן טקסט שיופיע לצד התמונה.</p>',
+          imagePosition: "right",
+          imageWidth: 50,
+          gap: 32,
+          alignment: "center",
+        },
+      };
+
+    case "Accordion":
+      return {
+        id,
+        type: "Accordion",
+        props: {
+          items: [
+            { title: "שאלה ראשונה?", content: "תשובה לשאלה הראשונה." },
+            { title: "שאלה שנייה?", content: "תשובה לשאלה השנייה." },
+          ],
+          allowMultiple: false,
+        },
+      };
+
     default:
       return null;
   }
 }
-

@@ -116,6 +116,19 @@ function buildModernSection(section: SectionMapping, colors: ColorPalette): Page
         case "offer":
         case "pricing":
             return buildOffer(section, colors);
+        // Professional landing page section types
+        case "authority":
+            return buildAuthority(section, colors);
+        case "disqualification":
+            return buildDisqualification(section, colors);
+        case "valueStack":
+            return buildValueStack(section, colors);
+        case "guarantee":
+            return buildGuarantee(section, colors);
+        case "painPoints":
+            return buildPainPoints(section, colors);
+        case "roadmap":
+            return buildRoadmap(section, colors);
         default:
             return buildGeneric(section, colors);
     }
@@ -508,4 +521,145 @@ function buildGeneric(section: SectionMapping, colors: ColorPalette): PageCompon
             gap: 24,
         },
     }, children);
+}
+
+// ============================================================================
+// PROFESSIONAL LANDING PAGE SECTIONS
+// ============================================================================
+
+function buildAuthority(section: SectionMapping, colors: ColorPalette): PageComponent {
+    const { heading, body, imagePrompt } = section.content;
+
+    return c("AuthorityBio", {
+        name: "",
+        headline: heading || "",
+        story: body || "",
+        imageSrc: imagePrompt ? `[IMAGE: ${imagePrompt}]` : "",
+        accentColor: colors.primary.main,
+        textColor: colors.text.primary,
+        backgroundColor: colors.background.default,
+    });
+}
+
+function buildDisqualification(section: SectionMapping, colors: ColorPalette): PageComponent {
+    const { heading, body, bullets = [] } = section.content;
+
+    return c("DisqualificationCard", {
+        headline: heading || "למי זה לא מתאים?",
+        description: body || "",
+        items: bullets,
+        closingStatement: "התהליך הזה לא בשבילך.",
+        accentColor: colors.semantic.error,
+        textColor: colors.text.primary,
+        backgroundColor: colors.background.default,
+        cardBackground: colors.background.paper,
+    });
+}
+
+function buildValueStack(section: SectionMapping, colors: ColorPalette): PageComponent {
+    const { heading, subheading, items = [], ctaText } = section.content;
+
+    const valueItems = items.map((item: any) => {
+        if (typeof item === 'string') {
+            return { title: item, description: '', value: '' };
+        }
+        return {
+            title: item.title || item.name || '',
+            description: item.description || '',
+            value: item.value || item.price || '',
+        };
+    });
+
+    return c("ValueStack", {
+        headline: heading || "מה אתה מקבל בנוסף?",
+        subheadline: subheading || "",
+        items: valueItems,
+        totalValue: "",
+        accentColor: colors.primary.main,
+        textColor: colors.text.primary,
+        backgroundColor: colors.background.default,
+        cardBackground: colors.background.paper,
+        ctaText: ctaText || "",
+    });
+}
+
+function buildGuarantee(section: SectionMapping, colors: ColorPalette): PageComponent {
+    const { heading, body, ctaText } = section.content;
+
+    return c("GuaranteeSection", {
+        headline: heading || "למה אני מתחייב לך לתוצאות?",
+        content: body || "",
+        warningText: "",
+        ctaText: ctaText || "",
+        accentColor: colors.primary.main,
+        warningColor: colors.semantic.warning,
+        textColor: colors.text.primary,
+        backgroundColor: colors.background.default,
+    });
+}
+
+function buildPainPoints(section: SectionMapping, colors: ColorPalette): PageComponent {
+    const { heading, bullets = [] } = section.content;
+
+    const painCards: PageComponent[] = bullets.slice(0, 4).map((bullet: string, index: number) => {
+        const icons: ("trending-down" | "clock" | "dollar" | "alert")[] = ["trending-down", "clock", "dollar", "alert"];
+        return c("PainPointCard", {
+            icon: icons[index % icons.length],
+            title: bullet,
+            description: "",
+            accentColor: colors.semantic.error,
+            textColor: colors.text.primary,
+            backgroundColor: colors.background.paper,
+        });
+    });
+
+    return c("Container", {
+        style: {
+            padding: "80px 24px",
+            background: colors.background.default,
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 48,
+        },
+    }, [
+        richText(`<h2 style="font-size: 36px; font-weight: 700; color: ${colors.text.primary}; text-align: center; margin: 0;">${heading || "אם אחד מאלה נשמע לך מוכר, אתה במקום הנכון:"}</h2>`),
+        c("Container", {
+            style: {
+                flexDirection: "row",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                gap: 24,
+                maxWidth: "1000px",
+            },
+        }, painCards),
+    ]);
+}
+
+function buildRoadmap(section: SectionMapping, colors: ColorPalette): PageComponent {
+    const { heading, subheading, items = [] } = section.content;
+
+    const steps = items.map((item: any, index: number) => {
+        const icons: ("trending-up" | "shield" | "target" | "rocket" | "check" | "award")[] =
+            ["target", "trending-up", "shield", "rocket", "check", "award"];
+
+        if (typeof item === 'string') {
+            return { number: index + 1, title: item, description: '', icon: icons[index % icons.length] };
+        }
+        return {
+            number: index + 1,
+            title: item.title || item.step || '',
+            description: item.description || '',
+            icon: icons[index % icons.length],
+        };
+    });
+
+    return c("StepsRoadmap", {
+        headline: heading || "השלבים להצלחה",
+        subheadline: subheading || "",
+        steps: steps,
+        accentColor: colors.primary.main,
+        textColor: colors.text.primary,
+        backgroundColor: colors.background.default,
+        cardBackground: colors.background.paper,
+    });
 }

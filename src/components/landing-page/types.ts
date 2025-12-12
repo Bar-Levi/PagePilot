@@ -49,7 +49,16 @@ export type ComponentType =
   | "Steps"
   | "TestimonialsGrid"
   | "StatsGrid"
-  | "FAQAccordion";
+  | "FAQAccordion"
+  // Professional landing page components
+  | "AuthorityBio"
+  | "DisqualificationCard"
+  | "ValueStack"
+  | "GuaranteeSection"
+  | "AlertBanner"
+  | "PainPointCard"
+  | "StepsRoadmap"
+  | "ImageCarouselSection";
 
 // The unified structure for ANY component.
 export type PageComponent = {
@@ -149,7 +158,16 @@ export type AnyProps =
   | StepsProps
   | TestimonialsGridProps
   | StatsGridProps
-  | FAQAccordionProps;
+  | FAQAccordionProps
+  // Professional landing page component props
+  | AuthorityBioProps
+  | DisqualificationCardProps
+  | ValueStackProps
+  | GuaranteeSectionProps
+  | AlertBannerProps
+  | PainPointCardProps
+  | StepsRoadmapProps
+  | ImageCarouselSectionProps;
 
 // 0. Page Props
 export type PageProps = {
@@ -245,6 +263,10 @@ export type ButtonProps = {
   hoverColor?: string;
   fontWeight?: string;
   padding?: string;
+  // Color customization
+  backgroundColor?: string;
+  textColor?: string;
+  borderColor?: string;
 };
 
 // 8. Divider Props
@@ -297,6 +319,9 @@ export type HeroProps = {
   backgroundImage?: string;
   backgroundGradient?: string;
   alignment?: "left" | "center" | "right";
+  badge?: string; // תג אופציונלי מעל הכותרת (למשל "חדש!" או "מבצע מיוחד")
+  secondaryButtonText?: string; // כפתור משני
+  secondaryButtonLink?: string; // קישור לכפתור המשני
 };
 
 // Features Section Props
@@ -563,5 +588,156 @@ export type StatsGridProps = {
 export type FAQAccordionProps = {
   items?: any[];
   accentColor?: string;
+  [key: string]: any;
+};
+
+/**
+ * =================================================================
+ * PROFESSIONAL LANDING PAGE COMPONENT PROPS
+ * =================================================================
+ */
+
+// AuthorityBio Props - Profile photo + storytelling section
+export type AuthorityBioProps = {
+  imageSrc?: string;
+  imageAlt?: string;
+  name: string;
+  title?: string;
+  headline?: string;
+  story: string;
+  accentColor?: string;
+  textColor?: string;
+  backgroundColor?: string;
+  [key: string]: any;
+};
+
+// DisqualificationCard Props - "Who this is NOT for" section
+export type DisqualificationCardProps = {
+  headline?: string;
+  description?: string;
+  items: string[];
+  closingStatement?: string;
+  closingColor?: string;
+  accentColor?: string;
+  textColor?: string;
+  backgroundColor?: string;
+  cardBackground?: string;
+  [key: string]: any;
+};
+
+// ValueStack Props - Bonus items with checkmarks and total value
+export type ValueStackItem = {
+  title: string;
+  description?: string;
+  value?: string;
+};
+
+export type ValueStackProps = {
+  headline?: string;
+  subheadline?: string;
+  items: ValueStackItem[];
+  totalValue?: string;
+  totalLabel?: string;
+  accentColor?: string;
+  textColor?: string;
+  backgroundColor?: string;
+  cardBackground?: string;
+  ctaText?: string;
+  ctaHref?: string;
+  [key: string]: any;
+};
+
+// GuaranteeSection Props - Shield icon + promise + warning box
+export type GuaranteeSectionProps = {
+  headline?: string;
+  content: string;
+  warningText?: string;
+  warningTitle?: string;
+  ctaText?: string;
+  ctaHref?: string;
+  accentColor?: string;
+  warningColor?: string;
+  textColor?: string;
+  backgroundColor?: string;
+  [key: string]: any;
+};
+
+// AlertBanner Props - Warning/scarcity banner with icon
+export type AlertBannerProps = {
+  text: string;
+  variant?: "warning" | "info" | "urgent";
+  icon?: "warning" | "clock" | "info" | "none";
+  textColor?: string;
+  backgroundColor?: string;
+  borderColor?: string;
+  [key: string]: any;
+};
+
+// PainPointCard Props - Icon-based pain point cards
+export type PainPointCardProps = {
+  icon?: "trending-down" | "clock" | "dollar" | "alert" | "frown" | "question";
+  title: string;
+  description?: string;
+  accentColor?: string;
+  textColor?: string;
+  backgroundColor?: string;
+  [key: string]: any;
+};
+
+// StepsRoadmap Props - Visual step-by-step roadmap
+export type RoadmapStep = {
+  number?: number;
+  title: string;
+  description?: string;
+  icon?: "trending-up" | "shield" | "target" | "rocket" | "check" | "award";
+};
+
+export type StepsRoadmapProps = {
+  headline?: string;
+  subheadline?: string;
+  steps: RoadmapStep[];
+  accentColor?: string;
+  textColor?: string;
+  backgroundColor?: string;
+  cardBackground?: string;
+  [key: string]: any;
+};
+
+// ImageCarouselSection Props - Image carousel with headline
+export type CarouselImageItem = {
+  src: string;
+  alt?: string;
+  caption?: string;
+};
+
+export type ImageCarouselSectionProps = {
+  // Content
+  headline: string;
+  description?: string;
+  images: CarouselImageItem[];
+
+  // Colors
+  backgroundColor?: string;
+  headlineColor?: string;
+  descriptionColor?: string;
+  accentColor?: string;
+  underlineColor?: string;
+
+  // Navigation styling
+  arrowBackgroundColor?: string;
+  arrowColor?: string;
+  dotActiveColor?: string;
+  dotInactiveColor?: string;
+
+  // Settings
+  autoplay?: boolean;
+  autoplayInterval?: number;
+  showDots?: boolean;
+  showArrows?: boolean;
+  showCounter?: boolean;
+  aspectRatio?: "16:9" | "4:3" | "1:1" | "21:9" | "auto";
+  imageObjectFit?: "cover" | "contain" | "fill";
+  maxImageWidth?: string;
+
   [key: string]: any;
 };

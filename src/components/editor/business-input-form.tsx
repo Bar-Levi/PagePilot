@@ -133,7 +133,7 @@ export function BusinessInputForm() {
   const handleAutoFill = () => {
     // Fill all fields with realistic data for Hermes Finance
     form.setValue("businessName", "Hermes Finance");
-    form.setValue("email", "contact@hermesfinance.com");
+    form.setValue("email", "bar314levi@gmail.com");
     form.setValue("businessType", "חברת יעוץ פיננסי המתמחה בסיוע לצעירים בגילאי 20-30 בניהול כספים, השקעות, תכנון פיננסי וחיסכון. אנו מספקים כלים, הדרכות וייעוץ אישי כדי לעזור לצעירים להשיג עצמאות פיננסית ולבנות עתיד כלכלי יציב.");
     form.setValue("audience", "צעירים בגילאי 20-30 שמתחילים את דרכם המקצועית, רוצים ללמוד לנהל כספים נכון, לחסוך לעתיד, להשקיע בחכמה ולבנות בסיס פיננסי איתן. אנשים שמחפשים הדרכה מקצועית וכלים פרקטיים לניהול כספים.");
     

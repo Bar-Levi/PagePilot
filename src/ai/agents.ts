@@ -224,6 +224,13 @@ const SectionMappingSchema = z.object({
         "faq",
         "cta",
         "footer",
+        // Professional landing page section types
+        "authority",        // Bio/about section - builds trust
+        "disqualification", // Who it's NOT for - filters leads
+        "valueStack",       // Bonuses and offer value
+        "guarantee",        // Promise and guarantee
+        "painPoints",       // Pain point cards with icons
+        "roadmap",          // Steps/process roadmap
     ]),
     position: z.number(),
     componentType: z.string(),
@@ -305,15 +312,40 @@ Imagine the complete landing page from top to bottom. Think about:
 ## Step 2: DIVIDE INTO SECTIONS
 Create a logical flow of sections from Hero to Footer.
 
+**AVAILABLE SECTION TYPES:**
+
+Core sections:
+- "hero" - Main headline, subheadline, CTA
+- "problem" - Pain points and problems
+- "solution" - How we solve the problem
+- "benefits" - Key benefits list
+- "features" - Feature grid
+- "howItWorks" - Step-by-step process
+- "testimonials" / "socialProof" - Customer reviews
+- "stats" - Statistics and numbers
+- "faq" - Frequently asked questions
+- "cta" - Call to action section
+- "offer" / "pricing" - Pricing and offers
+
+**PROFESSIONAL SECTION TYPES (use these for high-converting pages):**
+- "authority" - Bio section with photo, builds trust and credibility (use when personal brand matters)
+- "disqualification" - "Who this is NOT for" section, filters leads and builds trust (use for coaching/consulting)
+- "valueStack" - Bonuses with prices and total value (use when selling courses/programs)
+- "guarantee" - Promise section with shield icon and warning (use to overcome objections)
+- "painPoints" - Cards with icons showing specific pain points (use to amplify problems)
+- "roadmap" - Visual step-by-step journey (use for programs/courses with clear phases)
+
 Common patterns based on goal:
-- **Leads**: Hero → Problem → Solution → Benefits → Social Proof → Lead Form → FAQ → CTA
-- **Sales**: Hero → Problem → Solution → Features → Pricing → Social Proof → Offer → FAQ → CTA
-- **Booking**: Hero → How It Works → Benefits → Social Proof → Booking CTA → FAQ
-- **Newsletter**: Hero → Value Prop → Benefits → Social Proof → Subscribe → CTA
+- **Coaching/Consulting**: Hero → painPoints → solution → authority → roadmap → valueStack → guarantee → disqualification → testimonials → FAQ → CTA
+- **Courses/Programs**: Hero → problem → solution → roadmap → benefits → testimonials → valueStack → guarantee → FAQ → CTA
+- **Services**: Hero → problem → solution → authority → benefits → testimonials → FAQ → CTA
+- **Leads**: Hero → painPoints → solution → benefits → testimonials → FAQ → CTA
+
+> **MANDATORY**: For ANY business related to coaching, consulting, financial services, courses, or personal brands, you MUST use at least 3 of the professional section types: authority, disqualification, valueStack, guarantee, painPoints, roadmap.
 
 ## Step 3: MAP CONTENT TO SECTIONS
 For each section:
-1. Assign a unique ID (e.g., "hero-1", "problem-1")
+1. Assign a unique ID (e.g., "hero-1", "authority-1")
 2. Choose the section type
 3. Set the position (0 = top, incrementing)
 4. Choose the right component type:
@@ -325,7 +357,12 @@ For each section:
    - FAQ: "FAQAccordion", "FAQList"
    - CTA: "CTASection", "CTABanner"
    - Offer: "PricingSection", "OfferSection"
-   - Image+Text: "ImageText" (for sections with image and text side by side)
+   - Authority: "AuthorityBio"
+   - Disqualification: "DisqualificationCard"
+   - ValueStack: "ValueStack"
+   - Guarantee: "GuaranteeSection"
+   - PainPoints: "PainPointCard"
+   - Roadmap: "StepsRoadmap"
 5. Extract the relevant content from rawText
 6. Add layout hints (variant, emphasis, background style, imagePosition: "left" or "right")
 7. Create image prompts if needed
@@ -333,10 +370,12 @@ For each section:
 ## Step 4: ENSURE FLOW
 Make sure the sections create a logical, persuasive flow that:
 - Captures attention (Hero)
-- Identifies with the problem
-- Presents the solution
-- Proves it works (social proof)
-- Handles objections (FAQ)
+- Identifies with the problem (painPoints or problem)
+- Builds credibility (authority, testimonials)
+- Presents the solution (solution, roadmap)
+- Proves it works (social proof, stats)
+- Shows the value (valueStack, offer)
+- Handles objections (guarantee, disqualification, FAQ)
 - Drives action (CTA)
 
 **CRITICAL RULES:**
@@ -347,6 +386,7 @@ Make sure the sections create a logical, persuasive flow that:
 5. Position numbers must be sequential (0, 1, 2, 3...)
 6. Choose appropriate component types for each section
 7. Add helpful image prompts for visual sections
+8. For coaching/consulting/courses, PREFER the professional section types (authority, valueStack, guarantee, etc.)
 
 Output ONLY valid JSON matching the schema.`,
         },
@@ -476,14 +516,21 @@ Consider:
 - **Cultural Context**: Hebrew/Israeli audience considerations
 - **Conversion Optimization**: Colors that drive action
 
-## Step 2: CHOOSE THE MOOD
+## Step 2: CHOOSE THE MOOD AND THEME
+**IMPORTANT: Default to DARK THEME for professional landing pages!**
+
+Modern high-converting landing pages use dark backgrounds (#0F172A, #1E293B, #0A0A0A) with:
+- Light/white text (#FFFFFF, #F8FAFC)
+- Vibrant accent colors (teal #00D4AA, gold #F59E0B, purple #8B5CF6)
+
 Based on the business type and tone:
-- **Professional/Corporate**: Blues, grays, navy (trust, stability)
-- **Friendly/Approachable**: Warm colors, oranges, teals (warmth, energy)
-- **Youthful/Playful**: Bright colors, purples, pinks (fun, creativity)
-- **Luxury/Premium**: Deep colors, golds, blacks (sophistication, exclusivity)
-- **Health/Wellness**: Greens, blues, earth tones (calm, natural)
-- **Tech/Innovation**: Blues, purples, cyans (modern, cutting-edge)
+- **Professional/Corporate**: Dark navy (#0F172A), teal accents (trust, stability)
+- **Friendly/Approachable**: Dark with warm accents, oranges, teals (warmth, energy)
+- **Youthful/Playful**: Dark with bright purples, pinks (fun, creativity)
+- **Luxury/Premium**: Deep black (#0A0A0A), golds (#D4AF37) (sophistication, exclusivity)
+- **Health/Wellness**: Dark greens, blues, earth tones (calm, natural)
+- **Tech/Innovation**: Dark blues (#1E1E3F), cyans (#00D4FF) (modern, cutting-edge)
+- **Financial/Coaching**: Dark slate (#0F172A), teal/green accents (#00D4AA)
 
 ## Step 3: CREATE THE PALETTE
 Generate a complete, harmonious color palette with:
@@ -518,17 +565,17 @@ Generate a complete, harmonious color palette with:
 - error: Red (#EF4444 or similar)
 - info: Blue (#3B82F6 or similar)
 
-**Background Colors**:
-- default: Main page background
-- paper: Card/section backgrounds
-- elevated: Modals, dropdowns
-- accent: Highlighted sections
+**Background Colors (USE DARK THEME!):**
+- default: Main page background (DARK: #0F172A, #1E293B, or similar)
+- paper: Card/section backgrounds (slightly lighter than default, e.g., #1E293B, #334155)
+- elevated: Modals, dropdowns (brighter than paper)
+- accent: Highlighted sections (gradient or accent-tinted)
 
-**Text Colors**:
-- primary: Main text (dark, high contrast)
-- secondary: Less important text (medium contrast)
-- disabled: Disabled state (low contrast)
-- inverse: Text on dark backgrounds (light)
+**Text Colors (LIGHT TEXT FOR DARK BACKGROUNDS!):**
+- primary: Main text (#FFFFFF or #F8FAFC for dark backgrounds)
+- secondary: Less important text (#A1A1AA, #94A3B8)
+- disabled: Disabled state (#4A5568)
+- inverse: Text on light backgrounds (#0F172A, #1E293B)
 
 ## Step 4: ENSURE ACCESSIBILITY
 - All text colors must have sufficient contrast (WCAG AA: 4.5:1 for normal text, 3:1 for large text)
